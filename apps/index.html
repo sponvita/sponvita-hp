@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps | 株式会社SPONVITA</title>
+  <meta name="description" content="SPONVITAが開発するモバイルアプリ。日々の暮らしをより自発的で豊かなものにするプロダクトを提供します。">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            navy: '#0f172a',
+            accent: '#2563eb',
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-sans text-navy bg-slate-50 antialiased">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-slate-50/70 backdrop-blur-md border-b border-slate-200/60">
+    <div class="px-6 sm:px-8 h-16 flex items-center">
+      <div class="max-w-4xl mx-auto w-full">
+        <a href="/" class="flex items-center gap-0">
+          <img src="/icon.svg" alt="" width="38" height="34" class="h-9 w-auto flex-shrink-0">
+          <span class="text-lg font-semibold tracking-tighter text-navy">SPONVITA</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-16">
+    <!-- Page Header -->
+    <section class="py-24 sm:py-32 px-6 sm:px-8">
+      <div class="max-w-4xl mx-auto">
+        <a href="/#services" class="inline-flex items-center gap-2 text-xs font-medium tracking-widest text-slate-400 uppercase hover:text-slate-600 transition-colors mb-10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Services
+        </a>
+        <p class="text-xs sm:text-sm font-medium tracking-[0.2em] text-accent uppercase mb-5">
+          自社プロダクト
+        </p>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tighter text-navy mb-6">Apps</h1>
+        <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl">
+          日々の暮らしをより自発的で豊かなものにするモバイルアプリを開発しています。<br>現在、以下の2タイトルをリリース準備中です。
+        </p>
+      </div>
+    </section>
+
+    <!-- App List -->
+    <section class="pb-32 px-6 sm:px-8">
+      <div class="max-w-4xl mx-auto space-y-10">
+
+        <!-- WordDrop -->
+        <article class="border border-slate-200 rounded-2xl bg-white overflow-hidden">
+          <div class="p-8 sm:p-10">
+            <div class="flex items-start gap-6 sm:gap-8">
+              <!-- Icon placeholder -->
+              <div class="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-center">
+                <span class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-slate-400 uppercase leading-tight">Coming<br>Soon</span>
+              </div>
+              <!-- App info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-navy">WordDrop</h2>
+                  <span class="inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider text-accent border border-accent/30 rounded-sm uppercase">Coming Soon</span>
+                </div>
+                <p class="text-xs text-slate-400 tracking-wider uppercase mb-4">iOS / Android</p>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                  読んだ本の一節や心に響いた言葉を、手軽に保存してホーム画面に飾るアプリ。
+                  起動のたびにランダムな名言がウィジェットに表示され、日々のインスピレーションをそっと後押しします。
+                  すべてのデータはデバイスに保存されるため、ネット接続は不要です。
+                </p>
+              </div>
+            </div>
+
+            <hr class="my-8 border-slate-100">
+
+            <!-- Features -->
+            <div class="grid sm:grid-cols-2 gap-6">
+              <div>
+                <h3 class="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">主な機能</h3>
+                <ul class="space-y-2.5">
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    引用文と出典をオフラインで保存・編集・削除
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    ホーム画面ウィジェットにランダム表示（Medium / Large）
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    お気に入り・検索・並び替え
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    モノクロミニマルデザイン（明朝体 × ゴシック体）
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">プレミアム機能</h3>
+                <ul class="space-y-2.5">
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-slate-400"></span>
+                    広告の非表示
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-slate-400"></span>
+                    タグ・カテゴリによる分類
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-slate-400"></span>
+                    CSV / JSON でのデータエクスポート
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-slate-400"></span>
+                    ウィジェット表示する名言の個別管理
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sponte -->
+        <article class="border border-slate-200 rounded-2xl bg-white overflow-hidden">
+          <div class="p-8 sm:p-10">
+            <div class="flex items-start gap-6 sm:gap-8">
+              <!-- Icon placeholder -->
+              <div class="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-center">
+                <span class="text-[9px] sm:text-[10px] font-semibold tracking-wider text-slate-400 uppercase leading-tight">Coming<br>Soon</span>
+              </div>
+              <!-- App info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-navy">Sponte</h2>
+                  <span class="inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider text-accent border border-accent/30 rounded-sm uppercase">Coming Soon</span>
+                </div>
+                <p class="text-xs text-slate-400 tracking-wider uppercase mb-4">iOS / Android</p>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                  野口整体の思想にインスパイアされた、タスク自発実行支援アプリ。
+                  「いま、これだけをやる」——そのシンプルな集中を支えるために設計されています。
+                  タスクの計画・実行・振り返りをひとつのアプリで完結でき、すべてのデータはデバイス内に保存されます。
+                </p>
+              </div>
+            </div>
+
+            <hr class="my-8 border-slate-100">
+
+            <!-- Features -->
+            <div class="grid sm:grid-cols-2 gap-6">
+              <div>
+                <h3 class="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">主な機能</h3>
+                <ul class="space-y-2.5">
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    実行画面：今やるタスクだけに集中。開始・中断・完了をシンプルに操作
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    タイムライン：リスト表示 / ガント表示で1日の流れを把握
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    ルーティン：曜日・時間・カテゴリを設定して繰り返しタスクを管理
+                  </li>
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span class="mt-1.5 w-1 h-1 flex-shrink-0 rounded-full bg-accent"></span>
+                    ログ：カテゴリ別グラフ・体調記録・達成ストリークで振り返り
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">プラン</h3>
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Free</p>
+                    <p class="text-sm text-slate-600">カテゴリ・ルーティン各10件、タイムライン7日先読み。一部広告あり。</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Standard</p>
+                    <p class="text-sm text-slate-600">カテゴリ・ルーティン各100件、タイムライン31日先読み。広告なし。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-12 px-6 sm:px-8 border-t border-slate-100">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="text-sm text-slate-500">© 2026 SPONVITA Inc.</p>
+    </div>
+  </footer>
+</body>
+</html>

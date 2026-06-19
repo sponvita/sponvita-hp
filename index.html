@@ -61,11 +61,15 @@
 <body class="font-sans text-navy bg-slate-50 antialiased">
   <header class="fixed top-0 left-0 right-0 z-50 bg-slate-50/70 backdrop-blur-md border-b border-slate-200/60">
     <div class="px-6 sm:px-8 h-16 flex items-center">
-      <div class="max-w-4xl mx-auto w-full">
-        <a href="#" class="flex items-center gap-0">
-          <img src="icon.svg" alt="" width="38" height="34" class="header-logo-icon h-9 w-auto flex-shrink-0">
+      <div class="max-w-4xl mx-auto w-full flex items-center justify-between">
+        <a href="/" class="flex items-center gap-0">
+          <img src="/icon.svg" alt="" width="38" height="34" class="header-logo-icon h-9 w-auto flex-shrink-0">
           <span class="text-lg font-semibold tracking-tighter text-navy">SPONVITA</span>
         </a>
+        <nav class="flex items-center gap-6 text-sm font-medium text-slate-600">
+          <a href="/news/" class="hover:text-accent transition-colors">News</a>
+          <a href="/blog/" class="hover:text-accent transition-colors">Blog</a>
+        </nav>
       </div>
     </div>
   </header>
@@ -128,6 +132,90 @@
             <p class="text-slate-600 text-sm leading-relaxed">ロジカルな思考と身体的アプローチの融合。心身の調和をサポートする新たなヘルスケアソリューションの創出に向けて、研究と準備を重ねています。</p>
           </li>
         </ul>
+      </div>
+    </section>
+
+    <!-- News -->
+    <section id="news" class="py-24 sm:py-32 px-6 sm:px-8 bg-white">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-12">News</h2>
+        <ul>
+          <!-- NEWS_ITEMS:START -->
+            <li>
+              <a href="/news/press-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
+                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.06.18</time>
+                <span class="text-slate-800">プレスリリースを配信しました</span>
+              </a>
+            </li>
+            <li>
+              <a href="/news/worddrop-ios-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
+                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.06.12</time>
+                <span class="text-slate-800">WordDrop iOS版をリリースしました</span>
+              </a>
+            </li>
+            <li>
+              <a href="/news/sponte-ios-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
+                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.06.05</time>
+                <span class="text-slate-800">sponte iOS版をリリースしました</span>
+              </a>
+            </li>
+          <!-- NEWS_ITEMS:END -->
+        </ul>
+        <div class="mt-10">
+          <a href="/news/" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline transition">
+            もっと見る
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog -->
+    <section id="blog" class="py-24 sm:py-32 px-6 sm:px-8">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-12">Blog</h2>
+        <ul class="grid gap-x-6 gap-y-10 grid-cols-2 lg:grid-cols-4">
+          <!-- BLOG_CARDS:START -->
+            <li>
+              <a href="/blog/getting-started-with-task-management/" class="group block">
+                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                  <img src="/assets/blog/getting-started-with-task-management.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">タスク管理をはじめる前に知っておきたい3つの考え方</h3>
+              </a>
+            </li>
+            <li>
+              <a href="/blog/weekly-review-habit/" class="group block">
+                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                  <img src="/assets/blog/weekly-review-habit.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">週次レビューを習慣にすると仕事はどう変わるか</h3>
+              </a>
+            </li>
+            <li>
+              <a href="/blog/sponvita-engineering-culture/" class="group block">
+                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                  <img src="/assets/blog/sponvita-engineering-culture.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">SPONVITAが大切にしているエンジニアリング文化</h3>
+              </a>
+            </li>
+            <li>
+              <a href="/blog/why-simple-ui-matters/" class="group block">
+                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                  <img src="/assets/blog/noimage.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">なぜシンプルなUIが続けやすさを生むのか</h3>
+              </a>
+            </li>
+          <!-- BLOG_CARDS:END -->
+        </ul>
+        <div class="mt-12">
+          <a href="/blog/" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline transition">
+            もっと見る
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
       </div>
     </section>
 

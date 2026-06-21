@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sponvita.co.jp/</loc>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-06-21</lastmod>
   </url>
   <url>
     <loc>https://sponvita.co.jp/news/</loc>
@@ -10,7 +10,7 @@
   </url>
   <url>
     <loc>https://sponvita.co.jp/blog/</loc>
-    <lastmod>2026-06-15</lastmod>
+    <lastmod>2026-06-21</lastmod>
   </url>
   <url>
     <loc>https://sponvita.co.jp/news/press-release/</loc>
@@ -25,23 +25,11 @@
     <lastmod>2026-04-23</lastmod>
   </url>
   <url>
-    <loc>https://sponvita.co.jp/blog/getting-started-with-task-management/</loc>
-    <lastmod>2026-06-15</lastmod>
-  </url>
-  <url>
-    <loc>https://sponvita.co.jp/blog/weekly-review-habit/</loc>
-    <lastmod>2026-06-10</lastmod>
-  </url>
-  <url>
-    <loc>https://sponvita.co.jp/blog/sponvita-engineering-culture/</loc>
-    <lastmod>2026-06-08</lastmod>
-  </url>
-  <url>
-    <loc>https://sponvita.co.jp/blog/why-simple-ui-matters/</loc>
-    <lastmod>2026-06-03</lastmod>
+    <loc>https://sponvita.co.jp/blog/task-management-tired/</loc>
+    <lastmod>2026-06-21</lastmod>
   </url>
   <url>
     <loc>https://sponvita.co.jp/blog/category/task-management/</loc>
-    <lastmod>2026-06-15</lastmod>
+    <lastmod>2026-06-21</lastmod>
   </url>
 </urlset>

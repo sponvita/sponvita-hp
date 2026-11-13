@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App | 株式会社SPONVITA</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] }, colors: { navy: '#0b1020', accent: '#3b5bff' } } } }
+  </script>
+  <style>
+    body { background: #f6f7fb; }
+    @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,30px); } }
+    .orb { position: absolute; border-radius: 9999px; filter: blur(70px); pointer-events: none; }
+    .orb-1 { width: 480px; height: 480px; background: #93a8ff; opacity: .5; top: -140px; right: -120px; animation: float1 16s ease-in-out infinite; }
+    .orb-2 { width: 400px; height: 400px; background: #7ee0d0; opacity: .4; top: 20px; left: -140px; animation: float1 20s ease-in-out infinite reverse; }
+    .grad-text { background: linear-gradient(100deg, #0b1020 10%, #3b5bff 60%, #14b8a6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    @media (prefers-reduced-motion: reduce) { .orb { animation: none; } }
+  </style>
+</head>
+<body class="font-sans text-navy antialiased">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#f6f7fb]/60 backdrop-blur-xl">
+    <div class="px-6 sm:px-8 h-16 flex items-center">
+      <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
+        <a href="/" class="flex items-center gap-0">
+          <img src="/icon.svg" alt="" width="38" height="34" class="h-9 w-auto flex-shrink-0">
+          <span class="text-lg font-semibold tracking-tighter text-navy">SPONVITA</span>
+        </a>
+        <nav class="flex items-center gap-6 text-sm font-medium text-slate-600">
+          <a href="/service/" class="hover:text-accent transition-colors">AI/FDE</a>
+          <a href="https://kinetic.sponvita.co.jp/" class="hover:text-accent transition-colors">App</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  <main class="relative overflow-hidden pt-32 pb-24 px-6 sm:px-8 min-h-screen">
+    <div class="orb orb-1" aria-hidden="true"></div>
+    <div class="orb orb-2" aria-hidden="true"></div>
+    <div class="max-w-5xl mx-auto relative">
+      <h1 class="grad-text text-5xl sm:text-7xl font-black tracking-tighter">App</h1>
+    </div>
+  </main>
+  <footer class="py-12 px-6 sm:px-8 bg-navy">
+    <div class="max-w-5xl mx-auto text-center">
+      <p class="text-sm text-slate-500">© 2026 SPONVITA Inc.</p>
+    </div>
+  </footer>
+</body>
+</html>

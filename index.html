@@ -19,56 +19,51 @@
   <meta name="twitter:description" content="現場での実務経験に基づいた確かな技術力で、システム開発支援からヘルスケア事業まで、自発的な生命を支えるテクノロジーを提供します。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['"Noto Sans JP"', 'sans-serif'],
-          },
-          colors: {
-            navy: '#0f172a',
-            accent: '#2563eb',
-          },
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+          colors: { navy: '#0b1020', accent: '#3b5bff' },
         },
       },
     }
   </script>
   <style>
-    @keyframes heroGradient {
-      0%   { background-position: 0% 50%; }
-      33%  { background-position: 100% 0%; }
-      66%  { background-position: 50% 100%; }
-      100% { background-position: 0% 50%; }
-    }
-    .hero-bg {
-      background: linear-gradient(
-        -45deg,
-        #0f172a,
-        #1e3a8a,
-        #1e1b4b,
-        #0c4a6e,
-        #3730a3,
-        #1d4ed8
-      );
-      background-size: 400% 400%;
-      animation: heroGradient 18s ease infinite;
+    body { background: #f6f7fb; }
+    @keyframes float1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,30px) scale(1.12); } }
+    @keyframes float2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,-20px) scale(1.08); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    .orb { position: absolute; border-radius: 9999px; filter: blur(70px); pointer-events: none; }
+    .orb-1 { width: 560px; height: 560px; background: #93a8ff; opacity: .55; top: -120px; right: -120px; animation: float1 16s ease-in-out infinite; }
+    .orb-2 { width: 480px; height: 480px; background: #7ee0d0; opacity: .45; bottom: -160px; left: -120px; animation: float2 19s ease-in-out infinite; }
+    .orb-3 { width: 320px; height: 320px; background: #ffc4a8; opacity: .45; top: 30%; left: 45%; animation: float1 22s ease-in-out infinite reverse; }
+    .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+    .rise-2 { animation-delay: .12s; }
+    .rise-3 { animation-delay: .24s; }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+    .reveal.is-in { opacity: 1; transform: none; }
+    .grad-text { background: linear-gradient(100deg, #0b1020 10%, #3b5bff 60%, #14b8a6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .company-bg { background: radial-gradient(circle at 15% 0%, #1e2a6b 0, transparent 55%), radial-gradient(circle at 90% 100%, #0e5a58 0, transparent 50%), #0b1020; }
+    @media (prefers-reduced-motion: reduce) {
+      .orb, .rise { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
     }
   </style>
 </head>
-<body class="font-sans text-navy bg-slate-50 antialiased">
-  <header class="fixed top-0 left-0 right-0 z-50 bg-slate-50/70 backdrop-blur-md border-b border-slate-200/60">
+<body class="font-sans text-navy antialiased">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#f6f7fb]/60 backdrop-blur-xl">
     <div class="px-6 sm:px-8 h-16 flex items-center">
-      <div class="max-w-4xl mx-auto w-full flex items-center justify-between">
+      <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
         <a href="/" class="flex items-center gap-0">
-          <img src="/icon.svg" alt="" width="38" height="34" class="header-logo-icon h-9 w-auto flex-shrink-0">
+          <img src="/icon.svg" alt="" width="38" height="34" class="h-9 w-auto flex-shrink-0">
           <span class="text-lg font-semibold tracking-tighter text-navy">SPONVITA</span>
         </a>
-        <nav class="flex items-center gap-6 text-sm font-medium text-slate-600">
-          <a href="/news/" class="hover:text-accent transition-colors">News</a>
-          <a href="/blog/" class="hover:text-accent transition-colors">Blog</a>
+        <nav class="flex items-center gap-7 text-sm font-medium text-slate-600">
+          <a href="/service/" class="hover:text-accent transition-colors">AI/FDE</a>
+          <a href="https://kinetic.sponvita.co.jp/" class="hover:text-accent transition-colors">App</a>
         </nav>
       </div>
     </div>
@@ -76,176 +71,92 @@
 
   <main>
     <!-- Hero -->
-    <section class="hero-bg min-h-screen flex flex-col justify-center px-6 sm:px-8 pt-20 pb-28 relative overflow-hidden">
-      <!-- 装飾ブロブ -->
-      <div class="absolute top-0 right-0 w-[min(90vw,720px)] aspect-square -translate-y-1/2 translate-x-1/3 rounded-full bg-white/[0.05] blur-3xl pointer-events-none" aria-hidden="true"></div>
-      <div class="max-w-4xl mx-auto w-full relative">
-        <p class="text-xs sm:text-sm font-medium tracking-[0.2em] text-blue-300 uppercase mb-5 sm:mb-6">
-          SPONTANEOUS LIFE
+    <section class="relative min-h-screen flex flex-col justify-center px-6 sm:px-8 pt-24 pb-28 overflow-hidden">
+      <div class="orb orb-1" aria-hidden="true"></div>
+      <div class="orb orb-2" aria-hidden="true"></div>
+      <div class="orb orb-3" aria-hidden="true"></div>
+      <div class="max-w-5xl mx-auto w-full relative">
+        <p class="rise text-xs sm:text-sm font-semibold tracking-[0.3em] text-accent uppercase mb-6">Spontaneous Life</p>
+        <h1 class="rise rise-2 grad-text text-[clamp(3.5rem,13vw,10rem)] leading-none font-black tracking-tighter mb-10">SPONVITA</h1>
+        <p class="rise rise-3 max-w-xl text-lg sm:text-xl text-slate-700 leading-relaxed mb-12">
+          個人も、企業も、自発的に動き出せるように。<br class="hidden sm:block">テクノロジーで「生きる力」を支えます。
         </p>
-        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white mb-12 sm:mb-14">
-          SPONVITA
-        </h1>
-        <a
-          href="#origin"
-          class="inline-block px-8 py-3.5 text-sm font-medium text-white bg-white/10 border border-white/30 rounded-sm backdrop-blur-sm hover:bg-white/20 hover:-translate-y-1 transition-all duration-200"
-        >
-          詳細
-        </a>
+        <div class="rise rise-3 flex flex-wrap gap-4">
+          <a href="#origin" class="px-8 py-3.5 text-sm font-semibold text-white bg-navy rounded-full hover:bg-accent hover:-translate-y-0.5 shadow-lg shadow-slate-900/10 transition-all duration-200">SPONVITAとは</a>
+        </div>
       </div>
-      <div class="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50">
-        <span class="text-xs tracking-widest uppercase">Scroll</span>
-        <span class="block w-px h-10 bg-gradient-to-b from-white/50 to-transparent rounded-full animate-pulse" aria-hidden="true"></span>
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500" aria-hidden="true">
+        <span class="text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+        <span class="block w-px h-10 bg-gradient-to-b from-slate-500 to-transparent animate-pulse"></span>
       </div>
     </section>
 
     <!-- Origin -->
-    <section id="origin" class="py-24 sm:py-32 px-6 sm:px-8 bg-white">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-12">Origin</h2>
-        <p class="text-slate-800 leading-relaxed mb-8">
+    <section id="origin" class="py-28 sm:py-40 px-6 sm:px-8">
+      <div class="max-w-5xl mx-auto reveal">
+        <h2 class="text-xs font-semibold tracking-[0.3em] text-accent uppercase mb-8">Origin</h2>
+        <p class="text-2xl sm:text-4xl font-bold leading-snug tracking-tight max-w-3xl mb-10">
+          <span class="text-accent">sponte</span>（自発的に）<span class="text-slate-400">×</span> <span class="text-accent">vita</span>（生命）
+        </p>
+        <p class="text-slate-700 leading-loose max-w-2xl">
           SPONVITAは、ラテン語の「sponte（自発的に）」と「vita（生命）」を組み合わせた造語です。
           個々人が生き生きと生きれるように。企業が内発的に動けるように。その想いを込めています。
         </p>
       </div>
     </section>
 
-    <!-- Services -->
-    <section id="services" class="py-24 sm:py-32 px-6 sm:px-8">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-16">Services</h2>
-        <ul class="grid gap-6 sm:grid-cols-3">
-          <li class="border border-slate-200 rounded-xl p-6 sm:p-8 bg-white hover:border-slate-300 transition-colors">
-            <h3 class="text-base font-semibold text-navy mb-3">システム開発支援・技術コンサルティング</h3>
-            <p class="text-slate-600 text-sm leading-relaxed">現場での実務経験に基づいた確かな技術力で、プロジェクトの成功を支援。単なる開発に留まらず、チームの内発的な動きを加速させる伴走型エンジニアリングを提供します。</p>
-          </li>
-          <li class="border border-slate-200 rounded-xl p-6 sm:p-8 bg-white hover:border-slate-300 transition-colors">
-            <h3 class="text-base font-semibold text-navy mb-3">自社プロダクト・EC事業</h3>
-            <p class="text-slate-600 text-sm leading-relaxed mb-5">テクノロジーを通じて、日々の暮らしをより自発的で豊かなものに変えていく。自社プロダクトの企画・開発を現在進行形で進めています。</p>
-            <a href="https://kinetic.sponvita.co.jp/" class="inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline transition">
-              アプリ一覧
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    <!-- Service -->
+    <section id="services" class="py-28 sm:py-40 px-6 sm:px-8 bg-white">
+      <div class="max-w-5xl mx-auto">
+        <h2 class="reveal text-xs font-semibold tracking-[0.3em] text-accent uppercase mb-14">AI/FDE</h2>
+        <ul class="grid gap-6 md:grid-cols-2">
+          <li class="reveal">
+            <a href="/service/" class="group flex h-full flex-col justify-between rounded-3xl p-8 sm:p-10 min-h-[220px] bg-[#f6f7fb] hover:bg-navy hover:text-white hover:-translate-y-1 transition-all duration-300">
+              <span class="block text-5xl font-black text-slate-300 group-hover:text-accent mb-8 transition-colors">01</span>
+              <div class="flex items-end justify-between gap-4">
+                <h3 class="text-xl sm:text-2xl font-bold leading-snug">AIコンサルティング/FDE</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 text-accent"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
             </a>
           </li>
-          <li class="border border-slate-200 rounded-xl p-6 sm:p-8 bg-white hover:border-slate-300 transition-colors">
-            <h3 class="text-base font-semibold text-navy mb-3">ヘルスケア・ウェルネス事業</h3>
-            <p class="text-slate-600 text-sm leading-relaxed">ロジカルな思考と身体的アプローチの融合。心身の調和をサポートする新たなヘルスケアソリューションの創出に向けて、研究と準備を重ねています。</p>
+          <li class="reveal">
+            <a href="https://kinetic.sponvita.co.jp/" class="group flex h-full flex-col justify-between rounded-3xl p-8 sm:p-10 min-h-[220px] bg-[#f6f7fb] hover:bg-navy hover:text-white hover:-translate-y-1 transition-all duration-300">
+              <span class="block text-5xl font-black text-slate-300 group-hover:text-accent mb-8 transition-colors">02</span>
+              <div class="flex items-end justify-between gap-4">
+                <h3 class="text-xl sm:text-2xl font-bold leading-snug">App</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 text-accent"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
+            </a>
           </li>
         </ul>
-      </div>
-    </section>
-
-    <!-- News -->
-    <section id="news" class="py-24 sm:py-32 px-6 sm:px-8 bg-white">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-12">News</h2>
-        <ul>
-          <!-- NEWS_ITEMS:START -->
-            <li>
-              <a href="/news/press-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
-                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.06.18</time>
-                <span class="text-slate-800">Sponteのプレスリリースを配信しました</span>
-              </a>
-            </li>
-            <li>
-              <a href="/news/sponte-ios-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
-                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.06.18</time>
-                <span class="text-slate-800">Sponte iOS版をリリースしました</span>
-              </a>
-            </li>
-            <li>
-              <a href="/news/worddrop-ios-release/" class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-5 border-b border-slate-200 hover:opacity-70 transition-opacity">
-                <time class="text-sm text-slate-500 tabular-nums shrink-0 sm:w-28">2026.04.23</time>
-                <span class="text-slate-800">WordDrop iOS版をリリースしました</span>
-              </a>
-            </li>
-          <!-- NEWS_ITEMS:END -->
-        </ul>
-        <div class="mt-10">
-          <a href="/news/" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline transition">
-            もっと見る
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Blog -->
-    <section id="blog" class="py-24 sm:py-32 px-6 sm:px-8">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-sm font-medium tracking-widest text-slate-600 uppercase mb-12">Blog</h2>
-        <ul class="grid gap-x-6 gap-y-10 grid-cols-2 lg:grid-cols-4">
-          <!-- BLOG_CARDS:START -->
-            <li>
-              <a href="/blog/cant-prioritize-not-weak-will/" class="group block">
-                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                  <img src="/assets/blog/noimage.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">優先順位が決められないのは意志が弱いからではない</h3>
-              </a>
-            </li>
-            <li>
-              <a href="/blog/task-management-hard-not-high-function/" class="group block">
-                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                  <img src="/assets/blog/noimage.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">タスク管理がしんどい人に必要なのは、もっと高機能なアプリではない</h3>
-              </a>
-            </li>
-            <li>
-              <a href="/blog/task-management-tired/" class="group block">
-                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                  <img src="/assets/blog/noimage.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">タスク管理に疲れた人へ。ToDoリストを増やすより「今日の3つ」に絞ろう</h3>
-              </a>
-            </li>
-            <li>
-              <a href="/blog/three-tasks-iphone-app-sponte/" class="group block">
-                <div class="aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                  <img src="/assets/blog/noimage.svg" alt="" loading="lazy" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <h3 class="mt-3 text-sm font-medium text-navy leading-snug group-hover:text-accent transition-colors">今日やることを3つだけ選ぶiPhoneアプリはある？Sponteと3タスク系アプリの違い</h3>
-              </a>
-            </li>
-          <!-- BLOG_CARDS:END -->
-        </ul>
-        <div class="mt-12">
-          <a href="/blog/" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline transition">
-            もっと見る
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-        </div>
       </div>
     </section>
 
     <!-- Company -->
-    <section id="company" class="hero-bg py-24 sm:py-32 px-6 sm:px-8 text-white">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-sm font-medium tracking-widest text-slate-400 uppercase mb-12">Company</h2>
-        <dl class="space-y-8">
-          <div>
-            <dt class="text-xs font-medium tracking-wider text-slate-400 uppercase mb-1">会社名</dt>
+    <section id="company" class="scroll-mt-16 company-bg py-28 sm:py-36 px-6 sm:px-8 text-white">
+      <div class="max-w-5xl mx-auto">
+        <h2 class="text-xs font-semibold tracking-[0.3em] text-teal-300 uppercase mb-12">Company</h2>
+        <dl class="divide-y divide-white/10 border-y border-white/10">
+          <div class="py-6 sm:flex sm:gap-10">
+            <dt class="text-xs font-medium tracking-wider text-slate-300 uppercase mb-1 sm:mb-0 sm:w-32 sm:pt-1 shrink-0">会社名</dt>
             <dd class="text-white">株式会社SPONVITA</dd>
           </div>
-          <div>
-            <dt class="text-xs font-medium tracking-wider text-slate-400 uppercase mb-1">設立</dt>
+          <div class="py-6 sm:flex sm:gap-10">
+            <dt class="text-xs font-medium tracking-wider text-slate-300 uppercase mb-1 sm:mb-0 sm:w-32 sm:pt-1 shrink-0">設立</dt>
             <dd class="text-white">2026年2月</dd>
           </div>
-          <div>
-            <dt class="text-xs font-medium tracking-wider text-slate-400 uppercase mb-1">所在地</dt>
+          <div class="py-6 sm:flex sm:gap-10">
+            <dt class="text-xs font-medium tracking-wider text-slate-300 uppercase mb-1 sm:mb-0 sm:w-32 sm:pt-1 shrink-0">所在地</dt>
             <dd class="text-white">〒150-0043 東京都渋谷区道玄坂1丁目10番8号渋谷道玄坂東急ビル2F−C</dd>
           </div>
-          <div>
-            <dt class="text-xs font-medium tracking-wider text-slate-400 uppercase mb-1">事業内容</dt>
+          <div class="py-6 sm:flex sm:gap-10">
+            <dt class="text-xs font-medium tracking-wider text-slate-300 uppercase mb-1 sm:mb-0 sm:w-32 sm:pt-1 shrink-0">事業内容</dt>
             <dd class="text-white">システム開発支援・技術コンサルティング・ヘルスケア事業 他</dd>
           </div>
-          <div>
-            <dt class="text-xs font-medium tracking-wider text-slate-400 uppercase mb-1">連絡先</dt>
+          <div class="py-6 sm:flex sm:gap-10">
+            <dt class="text-xs font-medium tracking-wider text-slate-300 uppercase mb-1 sm:mb-0 sm:w-32 sm:pt-1 shrink-0">連絡先</dt>
             <dd>
-              <a href="mailto:info@sponvita.co.jp" class="text-white underline hover:no-underline transition-[text-decoration]">
-                info@sponvita.co.jp
-              </a>
+              <a href="mailto:info@sponvita.co.jp" class="text-white underline hover:no-underline transition-[text-decoration]">info@sponvita.co.jp</a>
             </dd>
           </div>
         </dl>
@@ -253,10 +164,36 @@
     </section>
   </main>
 
-  <footer class="py-12 px-6 sm:px-8 border-t border-slate-100">
-    <div class="max-w-4xl mx-auto text-center">
+  <footer class="py-12 px-6 sm:px-8 bg-navy">
+    <div class="max-w-5xl mx-auto text-center">
       <p class="text-sm text-slate-500">© 2026 SPONVITA Inc.</p>
     </div>
   </footer>
+
+  <script>
+    // ページ内リンク（#company など）をクリックしたら該当セクションへスクロール
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        var target = document.getElementById(a.getAttribute('href').slice(1));
+        if (!target) return;
+        ev.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', a.getAttribute('href'));
+      });
+    });
+    (function () {
+      var els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach(function (e) { e.classList.add('is-in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.15 });
+      els.forEach(function (e, i) { e.style.transitionDelay = (i % 3) * 0.08 + 's'; io.observe(e); });
+    })();
+  </script>
 </body>
 </html>

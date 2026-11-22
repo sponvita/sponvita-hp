@@ -113,14 +113,14 @@
       root.setAttribute('data-rarity', d.group);
       root.className += ' js';
       document.write('<link rel="stylesheet" href="' + F + d.fonts + '&display=swap">');
-      document.write('<link rel="stylesheet" href="/designs/' + d.id + '.css?v=1">');
+      document.write('<link rel="stylesheet" href="/designs/' + d.id + '.css?v=2">');
 
       window.SPONVITA = { design: d, designs: DESIGNS, pick: pick, weightOf: weightOf, forced: !!forced };
     })();
   </script>
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap">
-    <link rel="stylesheet" href="/designs/default.css?v=1">
+    <link rel="stylesheet" href="/designs/default.css?v=2">
   </noscript>
 </head>
 <body>
@@ -282,7 +282,7 @@
       });
       if (d.js) {
         var s = document.createElement('script');
-        s.src = '/designs/' + d.id + '.js?v=1';
+        s.src = '/designs/' + d.id + '.js?v=2';
         document.body.appendChild(s);
       }
     })();

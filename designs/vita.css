@@ -1,0 +1,233 @@
+/* 07 vita — 生命（レア）。タイトルが光の粒で組み上がり、触れると散って、また集まる */
+
+:root {
+  --deep: #02060d;
+  --text: #dff6f2;
+  --text-2: rgba(223, 246, 242, .68);
+  --teal: #6ff5d4;
+  --blue: #7aa8ff;
+  --warm: #ffb08a;
+  --line: rgba(223, 246, 242, .14);
+  --latin: "Jost", "Zen Kaku Gothic New", sans-serif;
+}
+
+html { scroll-padding-top: 4rem; background: var(--deep); }
+body {
+  color: var(--text);
+  font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+  font-weight: 300;
+  background:
+    radial-gradient(ellipse 80% 40% at 15% 38%, rgba(26, 110, 120, .28), transparent 70%),
+    radial-gradient(ellipse 70% 40% at 90% 62%, rgba(50, 70, 170, .26), transparent 70%),
+    radial-gradient(ellipse 60% 30% at 40% 92%, rgba(150, 80, 60, .16), transparent 70%),
+    var(--deep);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+/* ポインタについてくる淡い光（vita.js が --px / --py を動かす） */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(520px circle at var(--px, 50%) var(--py, 30%), rgba(111, 245, 212, .09), transparent 60%);
+}
+::selection { background: var(--teal); color: var(--deep); }
+
+@keyframes vt-rise { from { opacity: 0; transform: translateY(16px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes vt-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(6vw, -4vh) scale(1.15); } }
+@keyframes vt-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes vt-morph {
+  0%, 100% { border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; }
+  33% { border-radius: 46% 54% 42% 58% / 56% 44% 58% 42%; }
+  66% { border-radius: 52% 48% 60% 40% / 42% 52% 48% 58%; }
+}
+@keyframes vt-beat { 0%, 100% { transform: scale(1); opacity: 1; } 12% { transform: scale(1.7); opacity: .6; } 24% { transform: scale(1); opacity: 1; } 36% { transform: scale(1.4); opacity: .7; } 48% { transform: scale(1); } }
+@keyframes vt-ring { from { transform: scale(.9); opacity: .7; } to { transform: scale(1.5); opacity: 0; } }
+@keyframes vt-fall { 0% { transform: translateY(-100%); } 100% { transform: translateY(260%); } }
+
+/* ── header ── */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  height: 4rem; padding: 0 1.5rem;
+  display: flex; align-items: center;
+  background: linear-gradient(rgba(2, 6, 13, .7), rgba(2, 6, 13, 0));
+}
+.site-header__inner { width: 100%; max-width: 70rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: .35rem; }
+.brand__mark { height: 1.9rem; width: auto; filter: brightness(0) invert(1); opacity: .92; }
+.brand__name { font-family: var(--latin); font-weight: 300; font-size: 1rem; letter-spacing: .42em; }
+.nav { display: flex; gap: 1.8rem; font-family: var(--latin); font-weight: 300; font-size: .9rem; letter-spacing: .18em; color: var(--text-2); }
+.nav a { transition: color .3s, text-shadow .3s; }
+.nav a:hover { color: var(--teal); text-shadow: 0 0 14px rgba(111, 245, 212, .7); }
+
+/* ── hero ── */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: 100vh; min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 6rem 1.5rem 7rem;
+}
+.hero__deco i { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+.hero__deco i:nth-child(1) { width: 46vw; height: 46vw; left: -14vw; bottom: -18vw; background: rgba(40, 190, 170, .32); animation: vt-drift 24s ease-in-out infinite; }
+.hero__deco i:nth-child(2) { width: 40vw; height: 40vw; right: -12vw; top: -12vw; background: rgba(80, 110, 255, .3); animation: vt-drift 30s ease-in-out infinite reverse; }
+.hero__deco i:nth-child(3) { width: 22vw; height: 22vw; right: 18vw; bottom: 6vh; background: rgba(255, 150, 110, .16); animation: vt-drift 20s ease-in-out infinite; }
+/* 粒を描くキャンバス（vita.js） */
+.vt-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.hero__inner { position: relative; width: 100%; max-width: 70rem; margin: 0 auto; }
+.hero__eyebrow {
+  margin-bottom: 1.8rem;
+  font-family: var(--latin); font-weight: 300; font-size: .82rem; letter-spacing: .62em; text-transform: uppercase; color: var(--teal);
+  animation: vt-rise 1.2s .2s both;
+}
+.hero__title {
+  margin-bottom: 2.4rem;
+  font-weight: 900; font-size: clamp(3.1rem, 17vw, 14.5rem); line-height: 1.05; letter-spacing: -.02em;
+  white-space: nowrap;
+  background: linear-gradient(100deg, var(--teal), var(--blue) 55%, var(--warm));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+/* キャンバスが動いているあいだ、本物の文字は場所だけ取って見せない。
+   vita.js が動かなかったときは、3.5 秒後に本物の文字を出す */
+@keyframes vt-fallback { to { opacity: 1; } }
+.js .hero__title { opacity: 0; animation: vt-fallback .8s 3.5s forwards; cursor: default; }
+.vt-ready .hero__title { background: none; animation: none; }
+.hero__lead {
+  max-width: 34rem; margin-bottom: 2.8rem;
+  font-size: 1.05rem; line-height: 2.2; letter-spacing: .08em; color: var(--text-2);
+  animation: vt-rise 1.2s 1.8s both;
+}
+.hero__lead br { display: none; }
+.hero__actions { animation: vt-rise 1.2s 2.1s both; }
+.btn {
+  display: inline-flex; align-items: center; gap: .9rem; padding: .9rem 1.9rem;
+  font-size: .92rem; font-weight: 400; letter-spacing: .2em;
+  border: 1px solid rgba(111, 245, 212, .45); border-radius: 999px;
+  background: rgba(111, 245, 212, .05);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: background .4s, box-shadow .4s, border-color .4s;
+}
+/* 鼓動する点 */
+.btn::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--warm); box-shadow: 0 0 12px var(--warm); animation: vt-beat 1.6s ease-in-out infinite; }
+.btn:hover { background: rgba(111, 245, 212, .14); border-color: var(--teal); box-shadow: 0 0 30px rgba(111, 245, 212, .35), inset 0 0 20px rgba(111, 245, 212, .12); }
+
+.hero__scroll {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: .7rem;
+  font-family: var(--latin); font-weight: 300; font-size: .66rem; letter-spacing: .5em; text-indent: .5em; text-transform: uppercase; color: var(--text-2);
+}
+.hero__scroll i { position: relative; display: block; width: 1px; height: 3rem; overflow: hidden; background: var(--line); }
+.hero__scroll i::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 40%; background: var(--teal); animation: vt-fall 2.2s cubic-bezier(.6, 0, .4, 1) infinite; }
+
+/* ── sections ── */
+.section { position: relative; z-index: 1; padding: 7rem 1.5rem; }
+.section__inner { max-width: 66rem; margin: 0 auto; }
+.section__label {
+  display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 3.6rem;
+  font-family: var(--latin); font-weight: 300; font-size: .82rem; letter-spacing: .6em; text-indent: .6em; text-transform: uppercase; color: var(--teal);
+}
+.section__label::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--teal); box-shadow: 0 0 14px var(--teal); animation: vt-beat 2.4s ease-in-out infinite; }
+
+.js .section__inner { opacity: 0; transform: translateY(26px); filter: blur(8px); transition: opacity 1.2s ease, transform 1.2s cubic-bezier(.2, .7, .2, 1), filter 1.2s ease; }
+.js .section__inner.is-in { opacity: 1; transform: none; filter: none; }
+
+/* origin：2 つの細胞が重なる */
+.origin__formula { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 3.6rem; }
+.origin__formula .term {
+  --c: 111, 245, 212;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
+  width: clamp(9.6rem, 42vw, 17rem); aspect-ratio: 1;
+  border: 1px solid rgba(var(--c), .55);
+  background: radial-gradient(circle at 38% 32%, rgba(var(--c), .26), rgba(var(--c), .05) 62%, transparent 75%);
+  box-shadow: inset 0 0 40px rgba(var(--c), .16), 0 0 50px rgba(var(--c), .14);
+  mix-blend-mode: screen;
+  animation: vt-morph 14s ease-in-out infinite, vt-breathe 6s ease-in-out infinite;
+}
+.origin__formula .term:last-child {
+  --c: 255, 176, 138;
+  margin-left: clamp(-3rem, -7vw, -1.6rem);
+  animation-duration: 17s, 6s; animation-delay: -5s, -3s;
+}
+.origin__formula .w { font-family: var(--latin); font-weight: 200; font-size: clamp(1.7rem, 7vw, 3.4rem); line-height: 1.1; letter-spacing: .06em; color: #fff; }
+.origin__formula .gloss { font-size: clamp(.68rem, 2.4vw, .9rem); letter-spacing: .14em; color: var(--text-2); }
+.origin__formula .x {
+  position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%);
+  font-family: var(--latin); font-weight: 200; font-size: clamp(1.4rem, 5vw, 2.2rem); line-height: 1; color: #fff;
+  text-shadow: 0 0 16px #fff, 0 0 36px var(--warm);
+}
+.origin__text { max-width: 38rem; margin: 0 auto; font-size: 1rem; line-height: 2.4; letter-spacing: .06em; text-align: center; color: var(--text-2); }
+
+/* services：膜のあるカード */
+.cards { display: grid; gap: 1.6rem; }
+.card__link {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 250px; height: 100%; padding: 2rem;
+  border: 1px solid var(--line); border-radius: 2.2rem;
+  background:
+    radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgba(111, 245, 212, .16), transparent 65%),
+    rgba(255, 255, 255, .025);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: transform .6s cubic-bezier(.2, .7, .2, 1), border-color .5s, box-shadow .5s, border-radius .8s cubic-bezier(.2, .7, .2, 1);
+}
+.card:nth-child(2) .card__link { background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 176, 138, .17), transparent 65%), rgba(255, 255, 255, .025); }
+.card__link:hover {
+  transform: translateY(-8px); border-color: rgba(111, 245, 212, .55); border-radius: 3.4rem 2rem 3.6rem 2.2rem;
+  box-shadow: 0 30px 80px -30px rgba(111, 245, 212, .45), inset 0 0 50px rgba(111, 245, 212, .07);
+}
+.card:nth-child(2) .card__link:hover { border-color: rgba(255, 176, 138, .6); box-shadow: 0 30px 80px -30px rgba(255, 176, 138, .45), inset 0 0 50px rgba(255, 176, 138, .07); }
+.card__num {
+  display: block; margin-bottom: 2rem; width: fit-content;
+  font-family: var(--latin); font-weight: 200; font-size: clamp(4rem, 11vw, 6.5rem); line-height: 1; letter-spacing: -.02em;
+  background: linear-gradient(120deg, var(--teal), var(--blue)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.card:nth-child(2) .card__num { background-image: linear-gradient(120deg, var(--warm), #ff7fb0); }
+.card__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.card__title { font-size: 1.3rem; font-weight: 400; line-height: 1.6; letter-spacing: .06em; }
+.card__arrow {
+  position: relative; flex-shrink: 0; width: 3rem; height: 3rem; padding: .85rem;
+  stroke-width: 1.2; border: 1px solid var(--line); border-radius: 50%; overflow: visible;
+  transition: border-color .5s, transform .6s cubic-bezier(.2, .7, .2, 1);
+}
+.card__link:hover .card__arrow { border-color: currentColor; transform: translateX(6px); }
+
+/* company：背骨のような一本の線と節 */
+.company { scroll-margin-top: 3rem; }
+.facts { position: relative; max-width: 48rem; margin: 0 auto; padding-left: 2.2rem; }
+.facts::before { content: ""; position: absolute; left: 4px; top: .6rem; bottom: .6rem; width: 1px; background: linear-gradient(var(--teal), var(--blue), var(--warm)); opacity: .6; }
+.facts__row { position: relative; padding: 1.2rem 0; }
+.facts__row::before { content: ""; position: absolute; left: -2.2rem; top: 1.75rem; width: 9px; height: 9px; border-radius: 50%; background: var(--deep); border: 1px solid var(--teal); box-shadow: 0 0 12px rgba(111, 245, 212, .8); }
+.facts__row::after { content: ""; position: absolute; left: -2.2rem; top: 1.75rem; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--teal); opacity: 0; }
+.facts__row.is-in::after { animation: vt-ring 1.6s ease-out .3s; }
+.js .facts__row { opacity: 0; transform: translateX(-14px); transition: opacity .9s ease, transform .9s cubic-bezier(.2, .7, .2, 1); }
+.js .facts__row.is-in { opacity: 1; transform: none; }
+.facts dt { margin-bottom: .35rem; font-size: .76rem; font-weight: 400; letter-spacing: .4em; color: var(--teal); }
+.facts dd { font-size: 1.04rem; font-weight: 400; line-height: 1.9; letter-spacing: .04em; }
+.facts dd a { border-bottom: 1px solid rgba(255, 176, 138, .6); transition: color .3s, text-shadow .3s; }
+.facts dd a:hover { color: var(--warm); text-shadow: 0 0 16px rgba(255, 176, 138, .7); }
+
+/* ── footer ── */
+.site-footer { position: relative; z-index: 1; padding: 3rem 1.5rem 3.4rem; border-top: 1px solid var(--line); }
+.site-footer__inner { max-width: 66rem; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; font-family: var(--latin); font-weight: 300; font-size: .82rem; letter-spacing: .24em; color: var(--text-2); }
+.design-tag { display: inline-flex; align-items: center; gap: .8rem; text-transform: uppercase; }
+.design-tag__rarity { color: var(--warm); text-shadow: 0 0 14px rgba(255, 176, 138, .7); }
+.design-tag__reroll { font-size: 1.05rem; line-height: 1; letter-spacing: 0; transition: transform .6s, color .3s; }
+.design-tag__reroll:hover { color: var(--teal); transform: rotate(180deg); }
+
+@media (min-width: 640px) {
+  .site-header { padding: 0 2.5rem; }
+  .hero { padding-left: 2.5rem; padding-right: 2.5rem; }
+  .hero__lead { font-size: 1.15rem; }
+  .hero__lead br { display: block; }
+  .section { padding: 10rem 2.5rem; }
+  .card__link { padding: 2.6rem; }
+  .facts__row { display: grid; grid-template-columns: 9rem 1fr; align-items: baseline; padding: 1.4rem 0; }
+  .facts dt { margin-bottom: 0; }
+}
+@media (min-width: 768px) {
+  .cards { grid-template-columns: 1fr 1fr; gap: 2.2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+  .js .section__inner, .js .facts__row { opacity: 1; transform: none; filter: none; transition: none; }
+  .js .hero__title { opacity: 1; }
+}

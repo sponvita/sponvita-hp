@@ -44,9 +44,10 @@
      */
     (function () {
       var F = 'https://fonts.googleapis.com/css2?';
+      var V = '3';   // designs/ の中身を変えたら上げる（古いファイルがブラウザに残らないように）
       // no は表示用の通し番号。group: base=今の画面 / day=曜日替わり / rare / ultra
       var DESIGNS = [
-        { no: 1,  id: 'default',   group: 'base',
+        { no: 1,  id: 'default',   group: 'base', js: true,
           fonts: 'family=Noto+Sans+JP:wght@400;500;600;700;900' },
         { no: 2,  id: 'blueprint', group: 'day', day: 1, js: true,   // 月
           fonts: 'family=IBM+Plex+Mono:wght@700&family=M+PLUS+1+Code:wght@300;400;500;700' },
@@ -113,14 +114,15 @@
       root.setAttribute('data-rarity', d.group);
       root.className += ' js';
       document.write('<link rel="stylesheet" href="' + F + d.fonts + '&display=swap">');
-      document.write('<link rel="stylesheet" href="/designs/' + d.id + '.css?v=2">');
+      document.write('<link rel="stylesheet" href="/designs/' + d.id + '.css?v=' + V + '">');
+      if (d.js) document.write('<link rel="preload" as="script" href="/designs/' + d.id + '.js?v=' + V + '">');
 
-      window.SPONVITA = { design: d, designs: DESIGNS, pick: pick, weightOf: weightOf, forced: !!forced };
+      window.SPONVITA = { design: d, designs: DESIGNS, pick: pick, weightOf: weightOf, forced: !!forced, v: V };
     })();
   </script>
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap">
-    <link rel="stylesheet" href="/designs/default.css?v=2">
+    <link rel="stylesheet" href="/designs/default.css?v=3">
   </noscript>
 </head>
 <body>
@@ -282,7 +284,7 @@
       });
       if (d.js) {
         var s = document.createElement('script');
-        s.src = '/designs/' + d.id + '.js?v=2';
+        s.src = '/designs/' + d.id + '.js?v=' + S.v;
         document.body.appendChild(s);
       }
     })();

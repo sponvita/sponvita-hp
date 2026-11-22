@@ -1,0 +1,122 @@
+/* muda — なくても誰も困らない機能の見た目。どのデザインを引いても、同じ姿で上に重なる */
+
+.muda-toasts, .muda-toast, .muda-hatch, .muda-bubble, .muda-dialog {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-style: normal; text-transform: none; letter-spacing: .02em; text-shadow: none;
+}
+
+@keyframes muda-in { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes muda-out { to { opacity: 0; transform: translateY(6px); } }
+@keyframes muda-z { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 15% { opacity: .95; } 100% { opacity: 0; transform: translate(34px, -16px) scale(1.5) rotate(12deg); } }
+@keyframes muda-hatch { from { transform: translate(-50%, 110%); } to { transform: translate(-50%, 0); } }
+@keyframes muda-nod { 0%, 100% { rotate: -7deg; } 50% { rotate: -11deg; } }
+
+/* ── 画面の下に出るひとこと ── */
+.muda-toasts {
+  position: fixed; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9000;
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  width: max-content; max-width: calc(100vw - 2rem); pointer-events: none;
+}
+.muda-toasts.has-hatch { bottom: calc(4.2rem + env(safe-area-inset-bottom)); }
+.muda-toast, .muda-bubble {
+  margin: 0; padding: .55rem 1.05rem; max-width: 100%;
+  font-size: 13px; line-height: 1.6; font-weight: 500; text-align: center; color: #fff;
+  background: rgba(15, 18, 28, .93); border: 1px solid rgba(255, 255, 255, .16); border-radius: 1rem;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .6);
+  animation: muda-in .35s cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.muda-toast.is-out, .muda-bubble.is-out { animation: muda-out .3s ease-in forwards; }
+
+/* ── 1. 走行距離計 ── */
+.muda-odo {
+  font: inherit; color: inherit; letter-spacing: .04em; text-transform: none; white-space: nowrap;
+  font-variant-numeric: tabular-nums; cursor: pointer; opacity: .9;
+  text-decoration: underline dotted; text-underline-offset: .3em; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+.muda-odo:hover, .muda-odo:focus-visible { opacity: 1; text-decoration-style: solid; }
+
+.muda-dialog {
+  width: 100%; max-width: min(29rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); padding: 0; overflow: auto;
+  color: #14161f; background: #fbfaf6; border: 0; border-radius: 16px;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .7);
+  font-size: 14px; line-height: 1.75; text-align: left;
+}
+.muda-dialog::backdrop { background: rgba(8, 10, 18, .58); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.muda-dialog[open] { animation: muda-in .3s cubic-bezier(.2, .9, .3, 1.1) both; }
+.muda-dialog * { box-sizing: border-box; }
+.muda-dialog__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .8rem 1rem .8rem 1.25rem; border-bottom: 1px solid #e3e0d6;
+}
+.muda-dialog__title { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .12em; }
+.muda-dialog__close {
+  width: 2rem; height: 2rem; font-size: 18px; line-height: 1; color: #14161f; background: none; border: 0; border-radius: 50%; cursor: pointer;
+}
+.muda-dialog__close:hover { background: #ebe8dd; }
+.muda-dialog__body { padding: 1.25rem; }
+/* 車のメーターのような数字の窓 */
+.muda-meter { display: flex; align-items: flex-end; justify-content: center; gap: .6rem; margin: .25rem 0 1.1rem; }
+.muda-meter__digits { display: flex; gap: 2px; padding: 5px; background: #0d0f16; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .8), 0 1px 0 #fff; }
+.muda-meter__digits b {
+  display: block; width: 1.55rem; padding: .3rem 0; text-align: center;
+  font: 700 1.7rem/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: #f4f1e6;
+  background: linear-gradient(#2a2d38, #15171f 48%, #0b0c11 52%, #20232d); border-radius: 3px;
+}
+.muda-meter__digits b.is-frac { color: #14161f; background: linear-gradient(#fff, #e7e3d6 48%, #cfcabb 52%, #f3f0e5); }
+.muda-meter__digits i { align-self: flex-end; padding: 0 1px .2rem; font: 700 1.3rem/1 ui-monospace, monospace; font-style: normal; color: #f4f1e6; }
+.muda-meter__unit { padding-bottom: .5rem; font-weight: 700; font-size: 1.05rem; }
+.muda-next { margin: 0 0 .35rem; font-weight: 600; }
+.muda-bar { height: 8px; margin-bottom: 1.1rem; background: #e7e3d6; border-radius: 99px; overflow: hidden; }
+.muda-bar i { display: block; height: 100%; min-width: 4px; background: linear-gradient(90deg, #3b5bff, #14b8a6); border-radius: 99px; }
+.muda-list { margin: 0 0 1.1rem; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: .1rem 1rem; font-size: 12.5px; }
+.muda-list li { display: flex; justify-content: space-between; gap: .5rem; padding: .12rem 0; border-bottom: 1px dotted #d8d4c7; color: #8b8776; }
+.muda-list li.is-done { color: #14161f; font-weight: 600; }
+.muda-list li.is-done::before { content: "✓"; margin-right: .3rem; color: #14b8a6; }
+.muda-list li span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.muda-facts { margin: 0 0 1rem; padding: .8rem 1rem; background: #f1eee3; border-radius: 10px; font-size: 13px; }
+.muda-facts p { margin: 0; }
+.muda-facts p + p { margin-top: .3rem; }
+.muda-note { margin: 0 0 1rem; font-size: 11.5px; line-height: 1.7; color: #6f6b5d; }
+.muda-dialog__foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.muda-reset { padding: 0; font: inherit; font-size: 12px; color: #6f6b5d; background: none; border: 0; text-decoration: underline; cursor: pointer; }
+.muda-ok { padding: .5rem 1.4rem; font: inherit; font-weight: 700; color: #fff; background: #14161f; border: 0; border-radius: 99px; cursor: pointer; }
+@media (max-width: 420px) { .muda-list { grid-template-columns: 1fr; } .muda-meter__digits b { width: 1.3rem; font-size: 1.45rem; } }
+
+/* ── 2. 居眠り ── */
+.muda-zzz { position: fixed; z-index: 9000; width: 0; height: 0; pointer-events: none; }
+.muda-zzz i {
+  position: absolute; left: 0; top: 0; font: 800 15px/1 ui-sans-serif, system-ui, sans-serif; font-style: normal;
+  /* 白い字に濃いふちどり。どのデザインの上でも読める */
+  color: #fff; -webkit-text-stroke: 3px rgba(15, 18, 28, .92); paint-order: stroke fill;
+  animation: muda-z 3.2s ease-out forwards;
+}
+.muda-zzz.is-still i { animation: none; opacity: .85; }
+/* ロゴが、こっくりこっくりする */
+.muda-asleep .brand__mark { animation: muda-nod 4s ease-in-out infinite; transform-origin: 50% 80%; }
+.muda-bubble { position: fixed; z-index: 9000; max-width: min(19rem, calc(100vw - 1.5rem)); text-align: left; pointer-events: none; }
+.muda-bubble::before {
+  content: ""; position: absolute; left: 1.1rem; top: -6px; width: 10px; height: 10px;
+  background: inherit; border: inherit; border-right: 0; border-bottom: 0; transform: rotate(45deg);
+}
+
+/* ── 3. 地下への入口 ── */
+.muda-hatch {
+  position: fixed; left: 50%; bottom: 0; z-index: 9001; transform: translateX(-50%);
+  padding: 7px 7px 0; border-radius: 12px 12px 0 0;
+  background: repeating-linear-gradient(-45deg, #f5c518 0 10px, #17181d 10px 20px);
+  box-shadow: 0 -14px 40px -10px rgba(0, 0, 0, .6);
+  animation: muda-hatch .7s cubic-bezier(.2, 1.2, .3, 1) both;
+  text-decoration: none;
+}
+.muda-hatch[hidden] { display: none; }
+.muda-hatch span {
+  display: flex; align-items: center; gap: .6rem; white-space: nowrap;
+  padding: .7rem 1.3rem calc(.7rem + env(safe-area-inset-bottom)); border-radius: 7px 7px 0 0;
+  font-size: 14px; font-weight: 700; color: #f5c518; background: #17181d;
+}
+.muda-hatch:hover span, .muda-hatch:focus-visible span { color: #17181d; background: #f5c518; }
+
+@media (prefers-reduced-motion: reduce) {
+  .muda-toast, .muda-bubble, .muda-dialog[open], .muda-hatch { animation: none; }
+  .muda-asleep .brand__mark { animation: none; rotate: -7deg; }
+}

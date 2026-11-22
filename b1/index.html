@@ -23,6 +23,7 @@
     @keyframes down-in { from { transform: translateY(9vh); opacity: 0; } }
     @keyframes up-out { to { transform: translateY(9vh); opacity: 0; } }
     @keyframes up-in { from { transform: translateY(-9vh); opacity: 0; } }
+    @keyframes memo-in { from { opacity: 0; transform: translateY(8px) rotate(1.4deg); } }
 
     .room {
       position: relative; height: 100%; min-height: 30rem; overflow: hidden;
@@ -85,6 +86,22 @@
     .gauge dt { opacity: .7; }
     .gauge dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 
+    /* 壁に貼ってある集計 */
+    .memo {
+      position: absolute; z-index: 3; left: 1.25rem; bottom: 1.1rem; width: min(19.5rem, calc(100% - 2.5rem)); margin: 0; padding: .85rem 1rem .8rem;
+      color: #1c1d22; background: #f4f1e4; border-radius: 2px; rotate: 1.4deg;
+      box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .8), 0 0 0 1px rgba(0, 0, 0, .1);
+      font: 12.5px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, "Hiragino Sans", monospace;
+      animation: memo-in .4s ease-out both;
+    }
+    .memo[hidden] { display: none; }
+    .memo::before { content: ""; position: absolute; left: 50%; top: -9px; width: 4.2rem; height: 18px; translate: -50% 0; background: rgba(245, 197, 24, .7); rotate: -2deg; }
+    .memo h2 { margin: 0 0 .35rem; padding-bottom: .3rem; font-size: 12.5px; font-weight: 700; letter-spacing: .12em; border-bottom: 1px solid rgba(0, 0, 0, .28); }
+    .memo dl { display: grid; grid-template-columns: 1fr auto; gap: 0 .9rem; margin: 0; }
+    .memo dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .memo p { margin: .45rem 0 0; font-size: 11px; line-height: 1.6; opacity: .68; }
+    body.is-dark .memo { opacity: .16; }
+
     .plate { position: relative; z-index: 3; max-width: 40rem; margin: 0 auto; }
     .plate.go-down { animation: down-out .22s ease-in forwards; }
     .plate.come-down { animation: down-in .35s cubic-bezier(.2, .8, .2, 1) both; }
@@ -107,7 +124,7 @@
     @media (hover: none) { .hint { display: none; } }
 
     @media (prefers-reduced-motion: reduce) {
-      .lamp, .plate { animation: none !important; }
+      .lamp, .plate, .memo { animation: none !important; }
     }
   </style>
   <noscript><style>.stairs .down, .hint, .gauge { display: none; }</style></noscript>
@@ -115,7 +132,10 @@
 <body>
   <main class="room">
     <div class="lamp" aria-hidden="true"></div>
-    <div class="wall"><p class="sign" id="sign" aria-hidden="true">B1F</p></div>
+    <div class="wall">
+      <p class="sign" id="sign" aria-hidden="true">B1F</p>
+      <aside class="memo" id="memo" aria-label="壁に貼ってある集計" hidden></aside>
+    </div>
 
     <a class="home" href="/">← 地上（トップページ）へ</a>
     <dl class="gauge" id="gauge">
@@ -138,16 +158,23 @@
     </div>
   </main>
 
+  <script src="/muda/stairs.js?v=1"></script>
   <script>
     /*
      * 地下。100 階まであるが、どの階にもほとんど何もない。
      * 階は ?f=12 のように URL に入る。4 階は欠番（3 階の下は 5 階）。
      * 階段を昇り降りした分は、トップページの走行距離計（/muda/muda.js）に足される。
      * 足すのは階段を使ったときだけ。URL で階を指定して来たときと、ブラウザの「戻る」は数えない。
+     * 地下 10 階から下では、たまに壁に「謎の集計」が貼ってある（?stat=1〜5 で指定して出せる。確認用）。
+     * 距離を足す部分と、集計を出すかを決める部分は /muda/stairs.js にある（屋上 /rf/ と共通）。
      */
     (function () {
+      var S = window.MUDA_STAIRS || {
+        FLOOR_M: 3.2, walk: function () {}, arrived: function () { return false; }, total: function () { return 0; },
+        best: function (k, n) { return n; }, dist: function (m) { return m.toFixed(1) + ' m'; }, roll: function () { return -1; }
+      };
       var BOTTOM = 100, SKIP = 4;
-      var FLOOR_M = 3.2;                // 1 階ぶんの深さ
+      var FLOOR_M = S.FLOOR_M;          // 1 階ぶんの深さ
       var SPECIAL = {
         1: '地下 1 階です。特に何もありません。',
         2: '段ボール箱が 3 つあります。中は空です。',
@@ -192,53 +219,78 @@
       function below(n) { return n + 1 === SKIP ? n + 2 : n + 1; }
       function above(n) { return n - 1 === SKIP ? n - 2 : n - 1; }
       function url(n) { return n <= 1 ? location.pathname : location.pathname + '?f=' + n; }
-      function best(n) {
-        var b = 1;
-        try { b = clamp(localStorage.getItem('sponvita.muda.deep')); } catch (e) {}
-        if (n > b) { b = n; try { localStorage.setItem('sponvita.muda.deep', String(b)); } catch (e) {} }
-        return b;
+      // ── 謎の集計 ── 5 つのうち、どれかがたまに壁に貼ってある（地下 10 階から下）
+      function count(text, re) { return (text.match(re) || []).length; }
+      var STATS = [
+        function () {
+          return S.topPage().then(function (t) {
+            var ten = count(t.text, /、/g), maru = count(t.text, /。/g);
+            return { title: 'トップページの句読点', rows: [['「、」', S.num(ten) + ' 個'], ['「。」', S.num(maru) + ' 個'], ['「、」1 個あたり', S.num(t.text.length / Math.max(1, ten), 1) + ' 文字']],
+              note: '画面に出ない文字と空白は数えていません。' };
+          });
+        },
+        function () {
+          return S.topPage().then(function (t) {
+            var all = Math.max(1, t.text.length), pct = function (n) { return S.num(n) + ' 字（' + S.num(n / all * 100, 1) + ' %）'; };
+            return { title: 'トップページの文字の内訳', rows: [['ひらがな', pct(count(t.text, /[\u3041-\u3096]/g))], ['カタカナ', pct(count(t.text, /[\u30A1-\u30FA\u30FC]/g))], ['漢字', pct(count(t.text, /[\u4E00-\u9FFF]/g))], ['英字と数字', pct(count(t.text, /[A-Za-z0-9]/g))]],
+              note: '全部で ' + S.num(t.text.length) + ' 字。残りは記号です。' };
+          });
+        },
+        function () {
+          return S.topPage().then(function (t) {
+            var tally = {}, list = [];
+            (t.text.match(/[\u3041-\u3096\u30A1-\u30FA\u4E00-\u9FFF]/g) || []).forEach(function (c) { tally[c] = (tally[c] || 0) + 1; });
+            for (var c in tally) list.push([c, tally[c]]);
+            list.sort(function (x, y) { return y[1] - x[1] || (x[0] < y[0] ? -1 : 1); });
+            return { title: 'トップページでよく使う文字', rows: list.slice(0, 4).map(function (e, i) { return [(i + 1) + ' 位 「' + e[0] + '」', S.num(e[1]) + ' 回']; }),
+              note: 'かなと漢字だけを数えています。全部で ' + S.num(list.length) + ' 種類です。' };
+          });
+        },
+        function () {
+          return S.topPage().then(function (t) {
+            var links = Array.prototype.slice.call(t.doc.querySelectorAll('a[href]'));
+            var here = links.filter(function (a) { return /\/b1(\/|$)/.test(a.getAttribute('href')); }).length;
+            var out = links.filter(function (a) { return /^https?:/.test(a.getAttribute('href')); }).length;
+            return { title: 'トップページのリンク', rows: [['リンクの数', S.num(links.length) + ' 本'], ['うち、外へ出るもの', S.num(out) + ' 本'], ['うち、この地下へ来るもの', S.num(here) + ' 本']],
+              note: 'トップページの重さは ' + S.num(t.bytes) + ' バイトです。' };
+          });
+        },
+        function (n) {
+          var m = S.dig().m, steps = Math.round(m / 0.2), secs = Math.round(performance.now() / 1000);
+          return { title: '階段の集計', rows: [['これまでに昇り降りした高さ', S.dist(m)], ['段数に直すと', S.num(steps) + ' 段'], ['このページを開いてから', Math.floor(secs / 60) + ' 分 ' + (secs % 60) + ' 秒']],
+            note: '1 段を 20 cm として数えています。消費カロリーは 0 kcal です。' };
+        }
+      ];
+      function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+      var memoFor = 0;
+      function memo(n, pick) {
+        var m = $('memo'), ticket = ++memoFor;
+        m.hidden = true; m.innerHTML = '';
+        if (pick < 0) return;
+        Promise.resolve().then(function () { return STATS[pick](n); }).then(function (stat) {
+          if (ticket !== memoFor) return;    // 数えているあいだに、別の階へ移った
+          m.innerHTML = '<h2>' + esc(stat.title) + '</h2><dl>' + stat.rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl><p>' + esc(stat.note) + '</p>';
+          m.hidden = false;
+          $('text').textContent = '壁に、集計が貼ってあります。誰が数えたのかは分かりません。';
+        }).catch(function () {});              // 数えられなければ、何も貼らない
       }
 
-      // ── 走行距離計に足す ──
-      // 書くのは sponvita.muda.dig だけ。スクロールの分（sponvita.muda.odo）は読むだけにして、
-      // トップページ側の記録とぶつからないようにしている
-      var PX_TO_M = 0.0254 / 96;        // /muda/muda.js と同じ換算
-      var digMem = null;
-      function dig() {
-        var d;
-        try { d = JSON.parse(localStorage.getItem('sponvita.muda.dig')); } catch (e) { d = digMem; }
-        return d && typeof d.m === 'number' && d.m > 0 ? d : { m: 0, t0: 0, t100: 0 };
-      }
-      function total(d) {
-        var px = 0;
-        try { px = (JSON.parse(localStorage.getItem('sponvita.muda.odo')) || {}).px || 0; } catch (e) {}
-        return (px > 0 ? px * PX_TO_M : 0) + d.m;
-      }
-      function walk(floors) {
-        var d = dig(), before = total(d);
-        if (!d.t0) d.t0 = Date.now();
-        d.m = Math.round((d.m + floors * FLOOR_M) * 10) / 10;
-        if (!d.t100 && before < 100 && total(d) >= 100) d.t100 = Date.now();
-        digMem = d;
-        try { localStorage.setItem('sponvita.muda.dig', JSON.stringify(d)); } catch (e) {}
-      }
-      function dist(m) {
-        if (m >= 1000) return (m / 1000).toFixed(2) + ' km';
-        return m.toFixed(m < 10 ? 2 : 1) + ' m';
-      }
-
+      var first = true;
       function render(n) {
         var text = SPECIAL[n] || POOL[(n * 7 + 3) % POOL.length].replace('{n}', n);
         document.title = 'B' + n + 'F | 株式会社SPONVITA';
         $('sign').textContent = 'B' + n + 'F';
         $('name').textContent = '地下 ' + n + ' 階';
         $('text').textContent = text;
+        // 着いたときだけ、集計が出るかを決める（最初の表示では、?stat= の指定があるときだけ）
+        memo(n, first && !/[?&]stat=/.test(location.search) ? -1 : S.roll('b1stats', STATS.length, n, !!SPECIAL[n]));
+        first = false;
         // 地下は 100 m 深くなるごとに、およそ 3 ℃ 上がる
         var depth = n * FLOOR_M;
         $('g-depth').textContent = depth.toFixed(1) + ' m';
         $('g-temp').textContent = (15 + depth * 0.03).toFixed(1) + ' ℃';
-        $('g-best').textContent = 'B' + best(n) + 'F';
-        $('g-odo').textContent = dist(total(dig()));
+        $('g-best').textContent = 'B' + S.best('deep', n, BOTTOM) + 'F';
+        $('g-odo').textContent = S.dist(S.total());
         document.body.style.setProperty('--dark', n === 13 ? 0.86 : Math.min(0.72, (n - 1) / 99 * 0.72).toFixed(3));
         document.body.classList.toggle('is-dark', n === 13);
 
@@ -257,7 +309,7 @@
       var busy = false;
       function go(n, dir) {
         if (busy || n < 1 || n > BOTTOM) return;
-        walk(Math.abs(n - current()));    // 3 階から 5 階へは 2 階ぶん（深さの計器と同じ数え方）
+        S.walk(Math.abs(n - current()));  // 3 階から 5 階へは 2 階ぶん（深さの計器と同じ数え方）
         history.pushState(null, '', url(n));
         if (reduce) return render(n);
         busy = true;
@@ -271,13 +323,13 @@
       function step(dir) {
         var n = current();
         if (dir === 'down') { if (n < BOTTOM) go(below(n), 'down'); }
-        else if (n === 1) { walk(1); location.href = '/'; }
+        else if (n === 1) { S.walk(1); location.href = '/'; }
         else go(above(n), 'up');
       }
 
       $('down').addEventListener('click', function (e) { e.preventDefault(); step('down'); });
       $('up').addEventListener('click', function (e) {
-        if (current() === 1) walk(1);     // 地上へ昇る 1 階ぶん。あとはリンクのまま進む
+        if (current() === 1) S.walk(1);   // 地上へ昇る 1 階ぶん。あとはリンクのまま進む
         else { e.preventDefault(); step('up'); }
       });
       window.addEventListener('keydown', function (e) {
@@ -288,12 +340,7 @@
       window.addEventListener('popstate', function () { render(current()); });
 
       // トップページの床から降りてきたときは、地上から地下 1 階までの 1 階ぶんを足す
-      try {
-        if (sessionStorage.getItem('sponvita.muda.descend')) {
-          sessionStorage.removeItem('sponvita.muda.descend');
-          if (current() === 1) walk(1);
-        }
-      } catch (e) {}
+      if (S.arrived('descend') && current() === 1) S.walk(1);
 
       render(current());
     })();

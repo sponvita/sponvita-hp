@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RF | 株式会社SPONVITA</title>
+  <!-- トップページの一番上で、さらに上へ行こうとし続けた人だけが来る場所。検索には出さない -->
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg?v=1">
+  <style>
+    /* 空の色。JS が時刻と高さから決める。色として登録しておくと、階を移るときになめらかに変わる */
+    @property --c0 { syntax: '<color>'; inherits: true; initial-value: #2f7fe0; }
+    @property --c1 { syntax: '<color>'; inherits: true; initial-value: #6fb1f2; }
+    @property --c2 { syntax: '<color>'; inherits: true; initial-value: #cfe6fb; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      --c0: #2f7fe0; --c1: #6fb1f2; --c2: #cfe6fb;      /* 空：てっぺん・なか・地平線 */
+      --b1: #34415a; --b2: #5e7594; --b3: #9db4d0; --b4: #b9cbe0;   /* 建物：近・中・遠、山 */
+      --cl: rgba(255, 255, 255, .92);                   /* 雲 */
+      --sg: #fff;                                       /* 看板の字 */
+      --night: 0; --stars: 0;
+      --near: 0; --mid: 0; --far: 0; --drop: 0; --sea: 0; --mt: 0;
+      overflow: hidden; color: #f3f5fa; background: #1d1f25;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+
+    @keyframes down-out { to { transform: translateY(-9vh); opacity: 0; } }
+    @keyframes down-in { from { transform: translateY(9vh); opacity: 0; } }
+    @keyframes up-out { to { transform: translateY(9vh); opacity: 0; } }
+    @keyframes up-in { from { transform: translateY(-9vh); opacity: 0; } }
+    @keyframes drift { from { transform: translateX(-34vw); } to { transform: translateX(134vw); } }
+    @keyframes sea { to { background-position: 44rem 0, -30rem 0; } }
+    @keyframes twinkle { 50% { opacity: .25; } }
+    @keyframes fly-r { from { transform: translateX(-20vw); } to { transform: translateX(120vw); } }
+    @keyframes fly-l { from { transform: translateX(120vw) scaleX(-1); } to { transform: translateX(-20vw) scaleX(-1); } }
+    @keyframes flap { 50% { transform: scaleY(.45); } }
+    @keyframes rise { from { transform: translateY(0); } to { transform: translateY(-120vh); } }
+    @keyframes streak { 0% { opacity: 0; transform: rotate(-24deg) translateX(0); } 12% { opacity: 1; } 100% { opacity: 0; transform: rotate(-24deg) translateX(-46vmin); } }
+    @keyframes memo-in { from { opacity: 0; transform: translateY(8px) rotate(-1.2deg); } }
+
+    .roof { position: relative; height: 100%; min-height: 30rem; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── 空 ── */
+    .sky {
+      position: relative; flex: 1; min-height: 12rem; overflow: hidden;
+      background: linear-gradient(var(--c0), var(--c1) 58%, var(--c2));
+      transition: --c0 1.1s, --c1 1.1s, --c2 1.1s;
+    }
+    .sky > * { position: absolute; }
+    .layer { left: 0; right: 0; bottom: 0; height: 100%; pointer-events: none; transition: transform .9s cubic-bezier(.3, .7, .2, 1), opacity .9s; }
+
+    .stars { inset: 0; width: 100%; height: 100%; opacity: var(--stars); transition: opacity 1.1s; pointer-events: none; }
+    .stars .tw { animation: twinkle 3.4s ease-in-out infinite; }
+
+    /* 太陽と月。位置は JS が決める */
+    .sun, .moon { width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2); border-radius: 50%; pointer-events: none; transition: left 1.1s, top 1.1s, opacity 1.1s; }
+    .sun {
+      --size: clamp(3.4rem, 11vmin, 6rem);
+      background: radial-gradient(circle closest-side, #fffdf2 0 44%, var(--sun, #ffe79a) 82%, color-mix(in srgb, var(--sun, #ffe79a) 60%, transparent));
+      box-shadow: 0 0 4rem 1.2rem color-mix(in srgb, var(--sun, #ffe79a) 60%, transparent), 0 0 14rem 6rem color-mix(in srgb, var(--sun, #ffe79a) 22%, transparent);
+    }
+    .moon { --size: clamp(2.8rem, 9vmin, 4.6rem); filter: drop-shadow(0 0 1.1rem rgba(245, 240, 220, .45)); }
+    .moon svg { display: block; width: 100%; height: 100%; }
+
+    /* 山と街。昇るほど小さく、低くなる */
+    .mount { opacity: var(--mt); transform-origin: 50% 100%; transform: translateY(calc(var(--far) * 22%)) scale(calc(1 - var(--far) * .3)); }
+    .city { left: 50%; right: auto; transform-origin: 50% 100%; }
+    .city svg, .mount svg { display: block; position: absolute; left: 0; bottom: 0; }
+    .mount svg { width: 100%; height: 34%; }
+    .city-far { transform: translate(-50%, calc(var(--far) * 30%)) scale(calc(1 - var(--far) * .45)); }
+    .city-mid { transform: translate(-50%, calc(var(--mid) * 35%)) scale(calc(1 - var(--mid) * .5)); }
+    .city-near { transform: translate(-50%, calc(var(--near) * 102%)); }
+    .city .w1 { fill: #ffd88a; opacity: calc(var(--night) * .92); }
+    .city .w2 { fill: #ffe9c0; opacity: calc(var(--night) * .5); }
+    .city .w0 { fill: rgba(255, 255, 255, .5); opacity: calc((1 - var(--night)) * .16); }
+
+    /* 雲。昇るほど下がってきて、やがて足もとに広がる */
+    .clouds { transform: translateY(calc(var(--drop) * 66%)); }
+    .cloud {
+      position: absolute; left: 0; top: var(--y); width: calc(var(--s) * 13rem); height: calc(var(--s) * 3.4rem);
+      animation: drift var(--d) linear infinite; animation-delay: var(--at);
+    }
+    .cloud i, .cloud i::before, .cloud i::after { position: absolute; border-radius: 50%; background: var(--cl); }
+    .cloud i { inset: 34% 0 0; filter: blur(calc(var(--s) * 3px)); }
+    .cloud i::before { content: ""; left: 16%; bottom: 38%; width: 38%; height: 150%; }
+    .cloud i::after { content: ""; left: 44%; bottom: 30%; width: 34%; height: 112%; }
+    .sea {
+      height: 46%; opacity: var(--sea); transform: translateY(calc((1 - var(--sea)) * 62%));
+      background:
+        radial-gradient(closest-side, var(--cl) 52%, transparent) 0 0 / 22rem 9rem repeat-x,
+        radial-gradient(closest-side, var(--cl) 48%, transparent) 9rem 2.6rem / 30rem 11rem repeat-x,
+        linear-gradient(transparent 4.5rem, var(--cl) 8.5rem);
+      animation: sea 90s linear infinite;
+    }
+
+    /* たまに通るもの */
+    .pass { inset: 0; pointer-events: none; overflow: hidden; }
+    .pass > * { position: absolute; left: 0; }
+    .bird { width: 22px; height: 9px; animation: flap .5s ease-in-out infinite; }
+    .flock { animation: fly-r 26s linear forwards; }
+    .flock.is-l { animation-name: fly-l; }
+    .plane { animation: fly-r 34s linear forwards; }
+    .plane.is-l { animation-name: fly-l; }
+    .balloon { left: var(--x); top: 100%; animation: rise 70s linear forwards; }
+    .shoot { left: var(--x); width: 16vmin; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #fff, transparent); animation: streak 1.1s ease-out forwards; }
+
+    /* 屋上に立っている看板 */
+    .sign {
+      left: 50%; bottom: 48px; margin: 0; transform: translateX(-50%);
+      font: 900 clamp(4.6rem, min(21vw, 24vh), 11rem)/.8 "Arial Narrow", "Helvetica Neue", Impact, "Hiragino Sans", sans-serif;
+      letter-spacing: -.04em; white-space: nowrap; color: var(--sg);
+      text-shadow: 0 2px 0 rgba(18, 28, 52, .28), 0 .6rem 2.4rem rgba(18, 28, 52, .38), 0 0 calc(var(--night) * 2.6rem) rgba(255, 216, 138, calc(var(--night) * .75));
+      transition: color 1.1s; user-select: none; -webkit-user-select: none;
+    }
+
+    .home, .gauge {
+      z-index: 6; top: 1.1rem; color: #fff; background: rgba(12, 16, 28, .42); border-radius: 8px;
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    }
+    .home { left: 1.25rem; padding: .3rem .7rem; font-size: 12px; letter-spacing: .08em; text-decoration: none; }
+    .home:hover { text-decoration: underline; }
+    /* 計器 */
+    .gauge {
+      right: 1.25rem; margin: 0; padding: .4rem .7rem;
+      display: grid; grid-template-columns: auto auto; gap: .1rem .8rem;
+      font: 12px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+    .gauge dt { opacity: .75; }
+    .gauge dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* 手すりにくくりつけてある集計 */
+    .memo {
+      z-index: 5; left: 1.25rem; bottom: 56px; width: min(19.5rem, calc(100% - 2.5rem)); margin: 0; padding: .85rem 1rem .8rem;
+      color: #1c1d22; background: #fbfaf3; border-radius: 3px; rotate: -1.2deg;
+      box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .7), 0 0 0 1px rgba(0, 0, 0, .08);
+      font: 12.5px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, "Hiragino Sans", monospace;
+      animation: memo-in .4s ease-out both;
+    }
+    .memo[hidden] { display: none; }
+    .memo::before { content: ""; position: absolute; left: 50%; top: -9px; width: 4.2rem; height: 18px; translate: -50% 0; background: rgba(255, 244, 170, .82); rotate: 2deg; }
+    .memo h2 { margin: 0 0 .35rem; padding-bottom: .3rem; font-size: 12.5px; font-weight: 700; letter-spacing: .12em; border-bottom: 1px solid rgba(0, 0, 0, .28); }
+    .memo dl { display: grid; grid-template-columns: 1fr auto; gap: 0 .9rem; margin: 0; }
+    .memo dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .memo p { margin: .45rem 0 0; font-size: 11px; line-height: 1.6; opacity: .68; }
+    /* 幅のせまい画面では、看板に重ならないように上へ寄せる */
+    @media (max-width: 640px) { .memo { bottom: auto; top: 9rem; } }
+
+    /* ── 屋上の床と手すり ── */
+    .floor {
+      position: relative; z-index: 4;
+      padding: 1.5rem 1.5rem calc(1.75rem + env(safe-area-inset-bottom));
+      background: linear-gradient(#2a2d35, #1c1e24); border-top: 6px solid #3d414c;
+    }
+    .floor::before {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 46px; margin-bottom: 6px; pointer-events: none;
+      background:
+        linear-gradient(rgba(22, 26, 36, .9) 0 5px, transparent 5px 21px, rgba(22, 26, 36, .7) 21px 23px, transparent 23px),
+        repeating-linear-gradient(90deg, rgba(22, 26, 36, .78) 0 3px, transparent 3px 30px);
+    }
+    .plate { position: relative; max-width: 40rem; margin: 0 auto; }
+    .plate.go-down { animation: down-out .22s ease-in forwards; }
+    .plate.come-down { animation: down-in .35s cubic-bezier(.2, .8, .2, 1) both; }
+    .plate.go-up { animation: up-out .22s ease-in forwards; }
+    .plate.come-up { animation: up-in .35s cubic-bezier(.2, .8, .2, 1) both; }
+    .plate h1 { margin: 0 0 .5rem; font-size: 13px; font-weight: 700; letter-spacing: .3em; color: #8fd0ff; }
+    .plate #text { margin: 0 0 1.25rem; min-height: 3.6em; font-size: clamp(1.05rem, 3.6vw, 1.35rem); line-height: 1.8; font-weight: 600; }
+    .stairs { display: flex; flex-wrap: wrap; gap: .75rem; }
+    .stairs a {
+      display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 1.3rem;
+      font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap;
+      color: #10202e; background: #8fd0ff; border: 2px solid #8fd0ff; border-radius: 8px;
+      transition: transform .15s, background-color .15s, color .15s;
+    }
+    .stairs a.down { color: #f3f5fa; background: transparent; border-color: rgba(243, 245, 250, .45); }
+    .stairs a:hover, .stairs a:focus-visible { transform: translateY(-2px); }
+    .stairs a.down:hover { border-color: #f3f5fa; }
+    .stairs a[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+    .hint { margin: .9rem 0 0; font-size: 11px; letter-spacing: .06em; opacity: .5; }
+    @media (hover: none) { .hint { display: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .plate, .cloud, .sea, .stars .tw, .memo { animation: none !important; }
+      .cloud { transform: translateX(var(--still)); }
+      .layer, .sky, .sun, .moon { transition: none; }
+      .pass { display: none; }
+    }
+  </style>
+  <noscript><style>.stairs .up, .hint, .gauge { display: none; }</style></noscript>
+</head>
+<body>
+  <main class="roof">
+    <div class="sky" id="sky">
+      <svg class="stars" id="stars" aria-hidden="true"></svg>
+      <div class="sun" id="sun" aria-hidden="true"></div>
+      <div class="moon" id="moon" aria-hidden="true"></div>
+      <div class="layer mount" aria-hidden="true">
+        <svg viewBox="0 0 1600 300" preserveAspectRatio="xMidYMax slice">
+          <path fill="var(--b4)" d="M0 300V214l90-34 70 22 96-52 84 44 60-18 120 46 92-70 54-62 30-8 28 8 58 64 96 74 110-40 86 30 74-56 92 48 120-38 80 26 60-14v126z"/>
+        </svg>
+      </div>
+      <div class="layer city city-far" id="city-far" aria-hidden="true"></div>
+      <div class="layer clouds" id="clouds" aria-hidden="true"></div>
+      <div class="layer city city-mid" id="city-mid" aria-hidden="true"></div>
+      <div class="layer sea" aria-hidden="true"></div>
+      <div class="layer city city-near" id="city-near" aria-hidden="true"></div>
+      <div class="pass" id="pass" aria-hidden="true"></div>
+      <p class="sign" id="sign" aria-hidden="true">RF</p>
+
+      <a class="home" href="/">← 地上（トップページ）へ</a>
+      <dl class="gauge" id="gauge">
+        <dt>高さ</dt><dd id="g-height">3.2 m</dd>
+        <dt>気温</dt><dd id="g-temp">15.0 ℃</dd>
+        <dt>見晴らし</dt><dd id="g-view">6.4 km</dd>
+        <dt>最高記録</dt><dd id="g-best">RF</dd>
+        <dt>走行距離</dt><dd id="g-odo">—</dd>
+      </dl>
+      <aside class="memo" id="memo" aria-label="手すりにくくりつけてある集計" hidden></aside>
+    </div>
+
+    <div class="floor">
+    <div class="plate" id="plate">
+      <h1 id="name">屋上</h1>
+      <p id="text" aria-live="polite">屋上です。この建物は 1 階建てなので、たいして高くありません。</p>
+      <nav class="stairs" aria-label="階段">
+        <a class="down" id="down" href="/">▼ 地上へ戻る</a>
+        <a class="up" id="up" href="?f=2">▲ さらに昇る</a>
+      </nav>
+      <p class="hint">↑ ↓ キーでも昇り降りできます</p>
+    </div>
+    </div>
+  </main>
+
+  <script src="/muda/stairs.js?v=1"></script>
+  <script>
+    /*
+     * 屋上。屋上の上に屋上があり、100 階まで続く。どの階にも、ほとんど空しかない。
+     * 階は ?f=12 のように URL に入る。?t=18.5 を付けると、その時刻（18 時半）の空になる（確認用）。
+     *
+     * 景色は 2 つのもので変わる。
+     *   - 見ている人の端末の時刻 … 空の色、太陽と月の位置、月の満ち欠け、星、窓の明かり
+     *   - 階                     … まわりの建物が下がっていき、山が見え、雲が近づき、80 階あたりで雲の上に出る
+     * 階段を昇り降りした分は、トップページの走行距離計（/muda/muda.js）に足される。
+     */
+    (function () {
+      var S = window.MUDA_STAIRS || {
+        FLOOR_M: 3.2, walk: function () {}, arrived: function () { return false; }, total: function () { return 0; },
+        best: function (k, n) { return n; }, dist: function (m) { return m.toFixed(1) + ' m'; },
+        num: function (n) { return String(n); }, roll: function () { return -1; }
+      };
+      var TOP = 100, F = S.FLOOR_M;
+      var SPECIAL = {
+        1: '屋上です。この建物は 1 階建てなので、たいして高くありません。',
+        2: '屋上の上に、屋上がありました。',
+        3: '屋上の上の屋上の、さらに上の屋上です。',
+        4: '4 階です。地下でとばした分が、ここにあります。',
+        5: '洗濯物を干すひもが張ってあります。何も干してありません。',
+        7: 'ベンチがあります。眺めは、さっきの階とほとんど同じです。',
+        10: '10 階まで来ましたね。見晴らしが少しよくなりました。それだけです。',
+        13: '風の強い階です。画面の中なので、何も飛びません。',
+        15: 'まわりの建物より高くなりました。勝ちです。何に勝ったのかは分かりません。',
+        20: '室外機が 1 台、回っています。何を冷やしているのかは分かりません。',
+        25: '「↓ 地上」と書いた矢印があります。親切ですね。',
+        30: '遠くの山がよく見えます。名前は分かりません。',
+        42: '壁がないので、「42」と書く場所がありません。',
+        50: '半分まで来ました。この上にあるのも、同じような屋上です。',
+        60: '雲が近くなってきました。今日は雲が低いようです。',
+        64: '方位磁針がここにもあります。やはり北を指しています。',
+        77: 'ラッキーセブンが 2 つ並びましたが、ここは屋上です。',
+        80: '雲の上に出ました。下の様子は、もう分かりません。',
+        88: '末広がりの階です。広がっているのは空だけです。',
+        99: 'あと 1 階で最上階です。期待しないでください。',
+        100: '最上階です。おつかれさまでした。ここにも、空しかありません。'
+      };
+      var POOL = [
+        '空があります。',
+        'ここにも空があります。',
+        '手すりがあります。安全です。',
+        '少し空に近づきました。誤差の範囲です。',
+        'さっきの階と、よく似ています。',
+        '風が吹いています。たぶん。',
+        '看板に「R{n}F」と書いてあります。迷わなくて済みます。',
+        '遠くで何か光りました。気のせいです。',
+        '見晴らしは良好です。見るものは特にありません。',
+        '特筆すべきことはありません。'
+      ];
+
+      var $ = function (id) { return document.getElementById(id); };
+      var body = document.body, sky = $('sky'), plate = $('plate');
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function clamp(n) { n = parseInt(n, 10); return n >= 1 && n <= TOP ? n : 1; }
+      function unit(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+      function current() { var m = /[?&]f=(\d+)/.exec(location.search); return clamp(m ? m[1] : 1); }
+      function label(n) { return n === 1 ? 'RF' : 'R' + n + 'F'; }
+      var T = (/[?&]t=([\d.]+)/.exec(location.search) || [])[1];
+      function url(n) {
+        var q = [];
+        if (n > 1) q.push('f=' + n);
+        if (T) q.push('t=' + T);
+        return location.pathname + (q.length ? '?' + q.join('&') : '');
+      }
+      function hour() {
+        if (T) return Math.min(23.99, parseFloat(T) || 0);
+        var d = new Date();
+        return d.getHours() + d.getMinutes() / 60;
+      }
+
+      // ── 空の色 ── 時刻ごとの［てっぺん, なか, 地平線］。あいだは混ぜる
+      var SKY = [
+        [0,    [5, 7, 15],    [11, 16, 38],   [26, 32, 64]],
+        [4.4,  [8, 12, 34],   [24, 32, 74],   [58, 56, 104]],
+        [5.6,  [34, 54, 108], [122, 106, 154], [244, 165, 122]],
+        [7,    [58, 124, 206], [134, 184, 234], [246, 222, 196]],
+        [11.5, [44, 122, 222], [108, 174, 240], [206, 230, 251]],
+        [15.5, [54, 124, 214], [126, 180, 236], [234, 226, 208]],
+        [17.2, [60, 82, 158], [216, 124, 138], [255, 180, 96]],
+        [18.3, [28, 36, 92],  [92, 64, 124],  [200, 104, 122]],
+        [19.4, [10, 16, 48],  [20, 28, 68],   [42, 42, 86]],
+        [24,   [5, 7, 15],    [11, 16, 38],   [26, 32, 64]]
+      ];
+      function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+      function rgb(c, a) { return 'rgb(' + Math.round(c[0]) + ' ' + Math.round(c[1]) + ' ' + Math.round(c[2]) + (a == null ? '' : ' / ' + a) + ')'; }
+      function skyAt(h) {
+        for (var i = 1; i < SKY.length; i++) {
+          if (h <= SKY[i][0]) {
+            var a = SKY[i - 1], b = SKY[i], t = (h - a[0]) / (b[0] - a[0]);
+            return [mix(a[1], b[1], t), mix(a[2], b[2], t), mix(a[3], b[3], t)];
+          }
+        }
+        return [SKY[0][1], SKY[0][2], SKY[0][3]];
+      }
+      function nightAt(h) {
+        if (h < 4.6) return 1;
+        if (h < 6.6) return 1 - (h - 4.6) / 2;
+        if (h < 17) return 0;
+        if (h < 19.4) return (h - 17) / 2.4;
+        return 1;
+      }
+      // 月齢（新月からの日数）。平均の周期から出す、おおよその値
+      var MOON = 29.530588853;
+      function moonAge() { return (((Date.now() / 864e5 + 2440587.5 - 2451550.1) % MOON) + MOON) % MOON; }
+      function moonSvg(age) {
+        var ph = age / MOON, k = Math.cos(2 * Math.PI * ph), rx = (Math.abs(k) * 50).toFixed(2), wax = ph < .5;
+        var d = 'M50 0A50 50 0 0 ' + (wax ? 1 : 0) + ' 50 100A' + rx + ' 50 0 0 ' + ((k > 0) === wax ? 0 : 1) + ' 50 0Z';
+        return '<svg viewBox="-2 -2 104 104"><circle cx="50" cy="50" r="50" fill="rgba(255,255,255,.08)"/><path d="' + d + '" fill="#f6f2e2"/></svg>';
+      }
+
+      // ── 街 ── 画面の幅に合わせて、ビルを並べる
+      function rng(seed) { return function () { seed = (seed + 0x6D2B79F5) | 0; var t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+      function skyline(id, seed, o) {
+        var W = Math.max(2400, window.innerWidth * 2), H = Math.round(sky.clientHeight * .98), r = rng(seed), x = 0, out = '';
+        while (x < W) {
+          var w = Math.round(o.w[0] + r() * (o.w[1] - o.w[0])), h = Math.round(H * (o.h[0] + r() * (o.h[1] - o.h[0])));
+          out += '<rect x="' + x + '" y="' + (H - h) + '" width="' + w + '" height="' + h + '"/>';
+          if (r() < .3) out += '<rect x="' + (x + Math.round(w * .3)) + '" y="' + (H - h - 8) + '" width="' + Math.round(w * .28) + '" height="8"/>';
+          if (o.win) {
+            for (var wy = H - h + o.win * 1.2; wy < H - o.win; wy += o.win * 2.1) {
+              for (var wx = x + o.win * .9; wx < x + w - o.win * 1.4; wx += o.win * 1.9) {
+                var p = r();
+                if (p < .42) out += '<rect class="' + (p < .2 ? 'w1' : p < .32 ? 'w2' : 'w0') + '" x="' + Math.round(wx) + '" y="' + Math.round(wy) + '" width="' + Math.round(o.win) + '" height="' + Math.round(o.win * 1.25) + '"/>';
+              }
+            }
+          }
+          x += w + Math.round(r() * o.gap);
+        }
+        var el = $(id);
+        el.style.width = W + 'px';
+        el.innerHTML = '<svg width="' + W + '" height="' + H + '" fill="var(' + o.fill + ')">' + out + '</svg>';
+      }
+      function build() {
+        skyline('city-far', 11, { w: [22, 64], h: [.07, .2], gap: 4, fill: '--b3' });
+        skyline('city-mid', 23, { w: [46, 120], h: [.16, .44], gap: 10, win: 5, fill: '--b2' });
+        skyline('city-near', 37, { w: [110, 230], h: [.42, .9], gap: 46, win: 11, fill: '--b1' });
+      }
+      function scatter() {
+        var r = rng(5), out = '', n = 110;
+        for (var i = 0; i < n; i++) {
+          out += '<circle' + (i % 7 === 0 ? ' class="tw" style="animation-delay:' + (-r() * 3.4).toFixed(2) + 's"' : '') +
+            ' cx="' + (r() * 100).toFixed(2) + '%" cy="' + (r() * 86).toFixed(2) + '%" r="' + (.5 + r() * 1.1).toFixed(2) + '" fill="#fff" opacity="' + (.45 + r() * .55).toFixed(2) + '"/>';
+        }
+        $('stars').innerHTML = out;
+        var c = '', k;
+        for (k = 0; k < 7; k++) {
+          var d = 70 + r() * 90;
+          c += '<div class="cloud" style="--y:' + (2 + r() * 30).toFixed(1) + '%;--s:' + (.7 + r() * 1.1).toFixed(2) + ';--d:' + d.toFixed(0) + 's;--at:' + (-r() * d).toFixed(0) + 's;--still:' + (r() * 80).toFixed(0) + 'vw"><i></i></div>';
+        }
+        $('clouds').innerHTML = c;
+      }
+
+      // ── たまに通るもの ──
+      function pass(n, night) {
+        var box = $('pass');
+        box.innerHTML = '';
+        if (reduce || Math.random() > .42) return;
+        var kinds = [];
+        if (night < .5 && n <= 45) kinds.push('bird', 'bird');
+        if (n >= 12) kinds.push('plane');
+        if (night < .4) kinds.push('balloon');
+        if (night > .7) kinds.push('shoot', 'shoot');
+        var kind = kinds[Math.floor(Math.random() * kinds.length)], left = Math.random() < .5 ? ' is-l' : '', html = '';
+        var top = (8 + Math.random() * 38).toFixed(0) + '%';
+        if (kind === 'bird') {
+          var b = '<svg class="bird" viewBox="0 0 22 9" style="position:absolute;left:{x}px;top:{y}px;animation-delay:{d}s"><path d="M1 8Q6 0 11 6Q16 0 21 8" fill="none" stroke="rgba(20,26,40,.75)" stroke-width="1.8" stroke-linecap="round"/></svg>';
+          html = '<div class="flock' + left + '" style="top:' + top + ';width:90px;height:40px">' +
+            [[0, 12, 0], [30, 0, -.2], [34, 26, -.35], [62, 14, -.1]].slice(0, 2 + Math.floor(Math.random() * 3)).map(function (p) { return b.replace('{x}', p[0]).replace('{y}', p[1]).replace('{d}', p[2]); }).join('') + '</div>';
+        } else if (kind === 'plane') {
+          html = '<svg class="plane' + left + '" style="top:' + top + '" width="150" height="14" viewBox="0 0 150 14"><defs><linearGradient id="trail"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".8"/></linearGradient></defs>' +
+            '<rect x="0" y="6.2" width="124" height="1.6" fill="url(#trail)"/><path d="M124 7l6-2h14l6 2-6 2h-14zM134 5l-4-5h3l6 5zM134 9l-4 5h3l6-5z" fill="' + (night > .5 ? '#cfd6e6' : '#f4f6fa') + '"/></svg>';
+        } else if (kind === 'balloon') {
+          var hue = [354, 28, 48, 200, 280][Math.floor(Math.random() * 5)];
+          html = '<svg class="balloon" style="--x:' + (10 + Math.random() * 78).toFixed(0) + '%" width="26" height="62" viewBox="0 0 26 62"><ellipse cx="13" cy="15" rx="12" ry="15" fill="hsl(' + hue + ' 78% 58%)"/><path d="M13 30l-2.6 3h5.2z" fill="hsl(' + hue + ' 78% 46%)"/><path d="M13 33q-4 9 0 16t0 13" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1"/></svg>';
+        } else if (kind === 'shoot') {
+          html = '<i class="shoot" style="--x:' + (30 + Math.random() * 60).toFixed(0) + '%;top:' + (6 + Math.random() * 30).toFixed(0) + '%;animation-delay:' + (1 + Math.random() * 4).toFixed(1) + 's;opacity:0"></i>';
+        }
+        box.innerHTML = html;
+      }
+
+      // ── 景色を塗る ──
+      function paint(n) {
+        var h = hour(), night = nightAt(h), c = skyAt(h), up = (n - 1) / (TOP - 1), st = body.style;
+        // 高いほど、てっぺんの青が深くなる
+        var c0 = mix(c[0], [8, 20, 62], up * .42), c1 = mix(c[1], c[0], up * .28), c2 = c[2];
+        st.setProperty('--c0', rgb(c0)); st.setProperty('--c1', rgb(c1)); st.setProperty('--c2', rgb(c2));
+        // 建物は、遠いものほど空の色にとける
+        var base = mix([52, 65, 90], [9, 12, 20], night);
+        st.setProperty('--b1', rgb(base));
+        st.setProperty('--b2', rgb(mix(c2, base, .66)));
+        st.setProperty('--b3', rgb(mix(c2, base, .38)));
+        st.setProperty('--b4', rgb(mix(c2, base, .3)));
+        st.setProperty('--cl', rgb(mix(mix([255, 255, 255], c2, .28), [58, 66, 92], night * .82), .9));
+        st.setProperty('--sg', rgb(mix([255, 255, 255], [255, 226, 160], night)));
+        st.setProperty('--night', night.toFixed(3));
+        st.setProperty('--stars', Math.min(1, night * (.75 + up * .25) + (night > .2 ? up * .1 : 0)).toFixed(3));
+        st.setProperty('--near', unit((n - 1) / 14).toFixed(3));
+        st.setProperty('--mid', unit((n - 1) / 70).toFixed(3));
+        st.setProperty('--far', up.toFixed(3));
+        st.setProperty('--mt', unit((n - 4) / 20).toFixed(3));
+        st.setProperty('--drop', unit((n - 1) / 85).toFixed(3));
+        st.setProperty('--sea', unit((n - 52) / 28).toFixed(3));
+
+        var sun = $('sun'), moon = $('moon');
+        var ps = (h - 5.2) / 13.4, pm = ((h - 17.6 + 24) % 24) / 13.2;
+        sun.style.opacity = ps >= 0 && ps <= 1 ? 1 : 0;
+        sun.style.left = (6 + unit(ps) * 88) + '%';
+        sun.style.top = (92 - Math.sin(Math.PI * unit(ps)) * 80) + '%';
+        var low = 1 - Math.sin(Math.PI * unit(ps));      // 地平線に近いほど赤い
+        sun.style.setProperty('--sun', rgb(mix([255, 236, 170], [255, 132, 72], low * low)));
+        moon.style.opacity = pm >= 0 && pm <= 1 ? .3 + night * .7 : 0;
+        moon.style.left = (8 + unit(pm) * 84) + '%';
+        moon.style.top = (88 - Math.sin(Math.PI * unit(pm)) * 74) + '%';
+        return night;
+      }
+
+      // ── 謎の集計 ── 5 つのうち、どれかがたまに手すりにくくりつけてある
+      var STATS = [
+        function (n) {
+          var h = n * F, d = 3.57 * Math.sqrt(h), area = Math.PI * d * d;
+          return { title: '見晴らしの集計', rows: [['水平線まで', S.num(d, 1) + ' km'], ['見えている広さ', S.num(Math.round(area)) + ' km²'], ['東京ドームに直すと', S.num(Math.round(area / 0.046755)) + ' 個分']],
+            note: '計算上の数字です。実際には、建物と雲でほとんど見えません。' };
+        },
+        function () {
+          var now = new Date(), y = now.getFullYear(), len = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365;
+          var day = Math.round((new Date(y, now.getMonth(), now.getDate()) - new Date(y, 0, 1)) / 864e5) + 1;
+          return { title: '今日の集計', rows: [['今年に入ってから', day + ' 日目'], ['今年の残り', (len - day) + ' 日'], ['今年の進み具合', S.num(day / len * 100, 1) + ' %']],
+            note: '空を見ていても、進み具合は変わりません。' };
+        },
+        function () {
+          var age = moonAge(), toFull = (MOON / 2 - age + MOON) % MOON;
+          return { title: '月の集計', rows: [['月齢', 'およそ ' + S.num(age, 1)], ['次の満月まで', 'およそ ' + Math.round(toFull) + ' 日'], ['月までの距離', '384,400 km']],
+            note: '月齢は、平均の周期から出したおおよその値です。月は、走行距離計の最後の目標です。' };
+        },
+        function (n) {
+          var h = n * F, p = 1013.25 * Math.pow(1 - 2.25577e-5 * h, 5.25588);
+          return { title: '空気の集計', rows: [['気圧（計算上）', S.num(p, 1) + ' hPa'], ['地上との差', '−' + S.num(1013.25 - p, 1) + ' hPa'], ['水が沸く温度', S.num(100 - h * 0.00338, 1) + ' ℃']],
+            note: 'カップ麺の出来あがりに、影響はありません。' };
+        },
+        function () {
+          var w = window.innerWidth, hh = window.innerHeight, area = Math.round(sky.clientWidth * sky.clientHeight);
+          return { title: '空の集計', rows: [['画面の広さ', S.num(w) + ' × ' + S.num(hh)], ['そのうち空', S.num(area) + ' 画素'], ['空の割合', S.num(area / (w * hh) * 100, 1) + ' %']],
+            note: '空の広さは、画面を大きくすると増えます。' };
+        }
+      ];
+      function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+      function memo(stat) {
+        var m = $('memo');
+        if (!stat) { m.hidden = true; m.innerHTML = ''; return; }
+        m.innerHTML = '<h2>' + esc(stat.title) + '</h2><dl>' + stat.rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl><p>' + esc(stat.note) + '</p>';
+        m.hidden = false;
+      }
+
+      var first = true;
+      function render(n) {
+        var text = SPECIAL[n] || POOL[(n * 7 + 3) % POOL.length].replace('{n}', n);
+        // 着いたときだけ、集計が出るかを決める（最初の表示では、?stat= の指定があるときだけ）
+        var pick = first && !/[?&]stat=/.test(location.search) ? -1 : S.roll('roofstats', STATS.length, n, !!SPECIAL[n]);
+        first = false;
+        if (pick >= 0) { memo(STATS[pick](n)); text = '手すりに、集計がくくりつけてあります。誰が数えたのかは分かりません。'; }
+        else memo(null);
+
+        document.title = label(n) + ' | 株式会社SPONVITA';
+        $('sign').textContent = label(n);
+        $('name').textContent = n === 1 ? '屋上' : '屋上 ' + n + ' 階';
+        $('text').textContent = text;
+        // 100 m 高くなるごとに、およそ 0.65 ℃ 下がる。見晴らしは、水平線までの距離
+        var height = n * F;
+        $('g-height').textContent = height.toFixed(1) + ' m';
+        $('g-temp').textContent = (15 - height * 0.0065).toFixed(1) + ' ℃';
+        $('g-view').textContent = (3.57 * Math.sqrt(height)).toFixed(1) + ' km';
+        $('g-best').textContent = label(S.best('high', n, TOP));
+        $('g-odo').textContent = S.dist(S.total());
+        pass(n, paint(n));
+
+        var up = $('up'), down = $('down');
+        if (n === 1) { down.textContent = '▼ 地上へ戻る'; down.href = '/'; }
+        else { down.textContent = '▼ ' + label(n - 1) + ' へ降りる'; down.href = url(n - 1); }
+        if (n >= TOP) {
+          up.textContent = '▲ この上は、まだ建てていません';
+          up.setAttribute('aria-disabled', 'true'); up.removeAttribute('href');
+        } else {
+          up.textContent = '▲ さらに昇る';
+          up.removeAttribute('aria-disabled'); up.href = url(n + 1);
+        }
+      }
+
+      var busy = false;
+      function go(n, dir) {
+        if (busy || n < 1 || n > TOP) return;
+        S.walk(Math.abs(n - current()));
+        history.pushState(null, '', url(n));
+        if (reduce) return render(n);
+        busy = true;
+        plate.className = 'plate go-' + dir;
+        setTimeout(function () {
+          render(n);
+          plate.className = 'plate come-' + dir;
+          setTimeout(function () { plate.className = 'plate'; busy = false; }, 360);
+        }, 220);
+      }
+      function step(dir) {
+        var n = current();
+        if (dir === 'up') { if (n < TOP) go(n + 1, 'up'); }
+        else if (n === 1) { S.walk(1); location.href = '/'; }
+        else go(n - 1, 'down');
+      }
+
+      $('up').addEventListener('click', function (e) { e.preventDefault(); step('up'); });
+      $('down').addEventListener('click', function (e) {
+        if (current() === 1) S.walk(1);   // 地上へ降りる 1 階ぶん。あとはリンクのまま進む
+        else { e.preventDefault(); step('down'); }
+      });
+      window.addEventListener('keydown', function (e) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key === 'ArrowUp') { e.preventDefault(); step('up'); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); step('down'); }
+      });
+      window.addEventListener('popstate', function () { render(current()); });
+
+      // 画面の大きさが変わったら、街を並べなおす。空の色は 1 分ごとに塗りなおす
+      var timer = 0;
+      window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(build, 200); });
+      setInterval(function () { if (!document.hidden) paint(current()); }, 60000);
+
+      // トップページの天井から昇ってきたときは、地上から屋上までの 1 階ぶんを足す
+      if (S.arrived('ascend') && current() === 1) S.walk(1);
+
+      scatter();
+      build();
+      $('moon').innerHTML = moonSvg(moonAge());
+      render(current());
+    })();
+  </script>
+</body>
+</html>

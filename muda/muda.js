@@ -1,15 +1,17 @@
 /*
- * muda — なくても誰も困らない機能を 3 つ。どのデザインを引いても動く。
+ * muda — なくても誰も困らない機能。どのデザインを引いても動く。
  *
  *   1. 走行距離計 … このサイトを何メートル スクロールしたかを測り続ける（フッターの「↕ 0.00 m」）
- *                   地下の階段を昇り降りした分も足す（1 階ぶん 3.2 m。数えるのは /b1/ の側）
+ *                   地下と屋上の階段を昇り降りした分も足す（1 階ぶん 3.2 m。数えるのは /muda/stairs.js）
  *   2. 居眠り     … 45 秒さわらないと、サイトが寝る。さわると「寝てません」と言う
  *   3. 地下への入口 … いちばん下で、さらに下へ行こうとし続けると、床が開く（/b1/ へ）
+ *   4. 屋上への入口 … いちばん上で、さらに上へ行こうとし続けると、天井が開く（/rf/ へ）
+ *   5. 印刷証明書  … ページを印刷すると、1 枚目に「印刷したことの証明書」が付く
  *
  * 記録はすべて、見ている人のブラウザの中（localStorage）だけに置く。どこにも送らない。
  */
 (function () {
-  var V = '1';
+  var V = '2';
   var doc = document, root = doc.documentElement;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -70,8 +72,8 @@
   var odo = load('odo', { px: 0, t0: 0, hit: 0, t100: 0 });
   var odoBtn = null, odoDirty = false;
 
-  // 地下の階段を昇り降りした分。書くのは /b1/ の側だけで、ここでは読むだけ（0 に戻すときを除く）
-  //   m: メートル / t0: 最初に階段を使った時刻 / t100: 地下にいるあいだに合計が 100 m を超えた時刻
+  // 地下と屋上の階段を昇り降りした分。書くのは /muda/stairs.js だけで、ここでは読むだけ（0 に戻すときを除く）
+  //   m: メートル / t0: 最初に階段を使った時刻 / t100: 階段にいるあいだに合計が 100 m を超えた時刻
   var dig = loadDig();
   function loadDig() {
     var d = load('dig', null);
@@ -131,13 +133,13 @@
       flushOdo();
       if (!doc.hidden) syncDig();
     });
-    // 地下から「戻る」で帰ってきたとき（ページが読み込み直されない）
+    // 地下や屋上から「戻る」で帰ってきたとき（ページが読み込み直されない）
     window.addEventListener('pageshow', function (e) { if (e.persisted) syncDig(); });
     setTimeout(syncDig, 1200);
   }
   function flushOdo() { if (odoDirty) { odoDirty = false; save('odo', odo); } }
 
-  // 目標を超えていたら知らせる。away は「地下にいるあいだに超えた」とき（まとめて 1 回だけ言う）
+  // 目標を超えていたら知らせる。away は「地下か屋上にいるあいだに超えた」とき（まとめて 1 回だけ言う）
   function checkGoals(away) {
     var m = meters(), last = null;
     while (odo.hit < GOALS.length && m >= GOALS[odo.hit].m) {
@@ -150,12 +152,12 @@
       else say(g.hit || '走行距離 ' + goalLabel(g) + '。' + g.name + 'を超えました。', 5200);
     }
     if (!away || !last) return;
-    if (last.m === 100) say('地下にいるあいだに、走行距離が 100 m を超えていました。タイムは ' + span(odo.t100) + ' でした（世界記録は 9.58 秒）。', 7000);
-    else if (last.m === 1) say('地下にいるあいだに、走行距離が 1 m を超えていました。フッターで測っています。', 6000);
-    else say('地下にいるあいだに、走行距離が ' + goalLabel(last) + '（' + last.name + '）を超えていました。', 6000);
+    if (last.m === 100) say('階段を使っているあいだに、走行距離が 100 m を超えていました。タイムは ' + span(odo.t100) + ' でした（世界記録は 9.58 秒）。', 7000);
+    else if (last.m === 1) say('階段を使っているあいだに、走行距離が 1 m を超えていました。フッターで測っています。', 6000);
+    else say('階段を使っているあいだに、走行距離が ' + goalLabel(last) + '（' + last.name + '）を超えていました。', 6000);
   }
 
-  // 地下で増えた分を読み直す
+  // 地下と屋上で増えた分を読み直す
   function syncDig() {
     dig = loadDig();
     if (dig.t0 && (!odo.t0 || dig.t0 < odo.t0)) { odo.t0 = dig.t0; odoDirty = true; }
@@ -207,7 +209,7 @@
       var elapsed = now - odo.t0;
       facts.push('測りはじめてから ' + span(elapsed) + '。');
       if (odo.t100) facts.push('100 m のタイムは ' + span(odo.t100) + '（世界記録は 9.58 秒）。');
-      if (dig.m > 0) facts.push('うち ' + distance(dig.m) + ' は、地下の階段を昇り降りした分です。');
+      if (dig.m > 0) facts.push('うち ' + distance(dig.m) + ' は、地下と屋上の階段を昇り降りした分です。');
       var speed = m / (elapsed / 1000);   // m/秒
       if (m > 0 && elapsed > 3000) {
         var y = (384400000 - m) / speed / 31557600;
@@ -228,7 +230,7 @@
         : '<p class="muda-next">月に着きました。おつかれさまでした。</p>') +
       '<ul class="muda-list">' + list + '</ul>' +
       '<div class="muda-facts">' + facts.map(function (f) { return '<p>' + f + '</p>'; }).join('') + '</div>' +
-      '<p class="muda-note">このサイトを上下にスクロールした量を、CSS の 1px ＝ 1/96 インチ（約 0.26 mm）として足しています。画面の大きさによって、指やホイールが実際に動いた距離とは違います。地下の階段は、1 階ぶんを 3.2 m として足しています。記録はこのブラウザの中だけにあります。</p>' +
+      '<p class="muda-note">このサイトを上下にスクロールした量を、CSS の 1px ＝ 1/96 インチ（約 0.26 mm）として足しています。画面の大きさによって、指やホイールが実際に動いた距離とは違います。地下と屋上の階段は、1 階ぶんを 3.2 m として足しています。記録はこのブラウザの中だけにあります。</p>' +
       '<div class="muda-dialog__foot"><button type="button" class="muda-reset">メーターを 0 に戻す</button>' +
       '<button type="button" class="muda-ok" data-close>閉じる</button></div></div>';
   }
@@ -322,68 +324,149 @@
     }, 1000);
   }
 
-  // ════════ 3. 地下への入口 ════════
-  var LINES = [null, 'ここが一番下です。', 'これより下はありません。', 'ありませんってば。', '……。'];
-  var knocks = 0, hatch = null, lastKnock = 0;
+  // ════════ 3. 地下への入口 ／ 4. 屋上への入口 ════════
+  // 端まで来て、さらにその先へ行こうとし続けると、5 回目で開く。一度開けた人は 2 回目で開く
+  function atBottom() { return window.innerHeight + (window.scrollY || 0) >= root.scrollHeight - 2; }
+  function atTop() { return (window.scrollY || 0) <= 0; }
 
-  function atBottom() {
-    return window.innerHeight + (window.scrollY || 0) >= root.scrollHeight - 2;
-  }
-  function openHatch(line) {
-    if (!hatch) {
-      hatch = el('a', 'muda-hatch');
-      hatch.href = '/b1/';
-      hatch.appendChild(el('span', '', '▼ 地下 1 階へ降りる'));
-      // 地上から地下 1 階へ降りる 1 階ぶんは、着いた先（/b1/）で距離に足す
-      hatch.addEventListener('click', function () {
-        flushOdo();
-        try { sessionStorage.setItem('sponvita.muda.descend', '1'); } catch (e) {}
-      });
-      doc.body.appendChild(hatch);
-      save('basement', true);
+  function makeDoor(o) {
+    var knocks = 0, hatch = null, last = 0;
+    function open(line) {
+      if (!hatch) {
+        hatch = el('a', 'muda-hatch' + (o.up ? ' muda-hatch--up' : ''));
+        hatch.href = o.href;
+        hatch.appendChild(el('span', '', o.label));
+        // 地上からの 1 階ぶんは、着いた先（/b1/・/rf/）で距離に足す
+        hatch.addEventListener('click', function () {
+          flushOdo();
+          try { sessionStorage.setItem('sponvita.muda.' + o.flag, '1'); } catch (e) {}
+        });
+        doc.body.appendChild(hatch);
+        save(o.key, true);
+      }
+      hatch.hidden = false;
+      if (!o.up) toasts.classList.add('has-hatch');
+      say(line);
     }
-    hatch.hidden = false;
-    toasts.classList.add('has-hatch');
-    say(line);
+    return {
+      knock: function () {
+        var now = Date.now();
+        if (now - last < 450) return;
+        last = now;
+        if (hatch && !hatch.hidden) return;
+        knocks++;
+        if (o.remember) o.remember(knocks);
+        if (hatch) return open('どうぞ。');
+        if (load(o.key, false)) { if (knocks >= 2) open('…またですか。開けます。'); return; }
+        if (knocks < o.lines.length) { if (o.lines[knocks]) say(o.lines[knocks], 3200); return; }
+        open('…わかりました。開けます。');
+      },
+      // 端から離れたら閉じる。数えなおし
+      close: function () {
+        if (!knocks && !(hatch && !hatch.hidden)) return;
+        knocks = 0;
+        if (o.remember) o.remember(0);
+        if (hatch && !hatch.hidden) { hatch.hidden = true; if (!o.up) toasts.classList.remove('has-hatch'); }
+      },
+      resume: function (n) { knocks = n; }
+    };
   }
-  function knock() {
-    var now = Date.now();
-    if (now - lastKnock < 450) return;
-    lastKnock = now;
-    if (hatch && !hatch.hidden) return;
-    knocks++;
-    if (hatch) return openHatch('どうぞ。');
-    if (load('basement', false)) { if (knocks >= 2) openHatch('…またですか。開けます。'); return; }
-    if (knocks < LINES.length) { if (LINES[knocks]) say(LINES[knocks], 3200); return; }
-    openHatch('…わかりました。開けます。');
-  }
-  function initBasement() {
-    // ホイール：一番下にいる状態で「回しはじめた」ときだけ数える（勢いで届いた分は数えない）
+
+  function initDoors() {
+    var floor = makeDoor({
+      key: 'basement', flag: 'descend', href: '/b1/', label: '▼ 地下 1 階へ降りる',
+      lines: [null, 'ここが一番下です。', 'これより下はありません。', 'ありませんってば。', '……。']
+    });
+    // スマホでは、一番上で下へ引くと画面が読み込み直されることがある。それでも数が消えないように、少しのあいだ覚えておく
+    var UP_KEY = 'sponvita.muda.upknocks';
+    var ceiling = makeDoor({
+      up: true, key: 'roof', flag: 'ascend', href: '/rf/', label: '▲ 屋上へ昇る',
+      lines: [null, 'ここが一番上です。', 'これより上はありません。', '空しかありませんよ。', '……。'],
+      remember: function (n) {
+        try {
+          if (n) sessionStorage.setItem(UP_KEY, JSON.stringify({ n: n, at: Date.now() }));
+          else sessionStorage.removeItem(UP_KEY);
+        } catch (e) {}
+      }
+    });
+    try {
+      var kept = JSON.parse(sessionStorage.getItem(UP_KEY));
+      if (kept && kept.n > 0 && Date.now() - kept.at < 20000) ceiling.resume(kept.n);
+    } catch (e) {}
+
+    // ホイール：端にいる状態で「回しはじめた」ときだけ数える（勢いで届いた分は数えない）
     var lastWheel = 0;
     window.addEventListener('wheel', function (e) {
       var now = Date.now(), fresh = now - lastWheel > 220;
       lastWheel = now;
-      if (fresh && e.deltaY > 0 && atBottom()) knock();
+      if (!fresh) return;
+      if (e.deltaY > 0 && atBottom()) floor.knock();
+      else if (e.deltaY < 0 && atTop()) ceiling.knock();
     }, { passive: true });
-    // 指：一番下にいる状態から、さらに上へ払ったとき
-    var startY = null;
-    window.addEventListener('touchstart', function (e) { startY = atBottom() ? e.touches[0].clientY : null; }, { passive: true });
+    // 指：端にいる状態から、さらにその先へ払ったとき
+    var startY = null, startAt = '';
+    window.addEventListener('touchstart', function (e) {
+      startAt = atBottom() ? 'bottom' : atTop() ? 'top' : '';
+      startY = startAt ? e.touches[0].clientY : null;
+    }, { passive: true });
     window.addEventListener('touchend', function (e) {
-      if (startY != null && e.changedTouches[0] && startY - e.changedTouches[0].clientY > 40 && atBottom()) knock();
+      var t = e.changedTouches[0];
+      if (startY != null && t) {
+        if (startAt === 'bottom' && startY - t.clientY > 40 && atBottom()) floor.knock();
+        if (startAt === 'top' && t.clientY - startY > 40 && atTop()) ceiling.knock();
+      }
       startY = null;
     }, { passive: true });
     // キー
     window.addEventListener('keydown', function (e) {
-      if (e.repeat || !atBottom()) return;
-      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'End' || (e.key === ' ' && !e.shiftKey && e.target === doc.body)) knock();
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+      var space = e.key === ' ' && e.target === doc.body;
+      if (atBottom() && (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'End' || (space && !e.shiftKey))) floor.knock();
+      else if (atTop() && (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home' || (space && e.shiftKey))) ceiling.knock();
     });
-    // 上へ戻ったら、床は閉じる。数えなおし
     window.addEventListener('scroll', function () {
-      if (window.innerHeight + (window.scrollY || 0) < root.scrollHeight - 240) {
-        knocks = 0;
-        if (hatch && !hatch.hidden) { hatch.hidden = true; toasts.classList.remove('has-hatch'); }
-      }
+      var y = window.scrollY || 0;
+      if (window.innerHeight + y < root.scrollHeight - 240) floor.close();
+      if (y > 240) ceiling.close();
     }, { passive: true });
+  }
+
+  // ════════ 5. 印刷証明書 ════════
+  // ページを印刷すると、1 枚目に「印刷したことの証明書」が付く。2 枚目からは、いつものページがそのまま出る
+  function initPrint() {
+    var cert = el('section', 'muda-cert');
+    cert.setAttribute('aria-hidden', 'true');
+    doc.body.insertBefore(cert, doc.body.firstChild);
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+
+    function fill(count) {
+      var now = new Date(), S = window.SPONVITA, d = S && S.design, rows = [];
+      var day = now.getFullYear() + ' 年 ' + (now.getMonth() + 1) + ' 月 ' + now.getDate() + ' 日';
+      rows.push(['印刷した日時', day + ' ' + now.getHours() + ' 時 ' + pad(now.getMinutes()) + ' 分']);
+      if (d) {
+        var line = 'No.' + pad(d.no) + ' ' + d.id;
+        if (S.weightOf && !S.forced) line += '（今日の当選確率 ' + S.weightOf(d, now.getDay()) + ' %）';
+        rows.push(['引いたデザイン', line]);
+      }
+      rows.push(['それまでの走行距離', distance(meters())]);
+      cert.innerHTML =
+        '<div class="muda-cert__frame">' +
+        '<p class="muda-cert__no">第 ' + num.format(count) + ' 号</p>' +
+        '<h2 class="muda-cert__title">印刷証明書</h2>' +
+        '<p class="muda-cert__to">このページを印刷した方　殿</p>' +
+        '<p class="muda-cert__body">あなたは、株式会社SPONVITA のウェブサイトを、<br>わざわざ紙に印刷されました。<br>画面で見れば済むところを、その手間を惜しまなかったことを、<br>ここに証明します。</p>' +
+        '<dl class="muda-cert__facts">' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>' +
+        '<div class="muda-cert__sign"><p>' + day + '<br><b>株式会社SPONVITA</b></p><span class="muda-cert__seal">印刷<br>済</span></div>' +
+        '<p class="muda-cert__note">この証明書に効力はありません。2 枚目からが、本来のページです。</p>' +
+        '</div>';
+    }
+    fill(load('prints', 0) + 1);
+    // 印刷しようとするたびに、番号を進める（プレビューを開いただけでも進む）
+    window.addEventListener('beforeprint', function () {
+      var n = load('prints', 0) + 1;
+      save('prints', n);
+      fill(n);
+    });
   }
 
   // ── 見た目を読み込んでから、はじめる ──
@@ -394,7 +477,7 @@
   function start() {
     if (started) return;
     started = true;
-    initOdo(); initDoze(); initBasement();
+    initOdo(); initDoze(); initDoors(); initPrint();
   }
   css.onload = start;
   css.onerror = function () {};   // 見た目が届かなければ、何もしない

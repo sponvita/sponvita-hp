@@ -133,30 +133,8 @@ body::after {
 .hero__deco i:nth-child(1) { --d: -52; width: 560px; height: 560px; background: #93a8ff; opacity: .55; top: -120px; right: -120px; animation: float1 16s ease-in-out infinite; }
 .hero__deco i:nth-child(2) { --d: -30; width: 480px; height: 480px; background: #7ee0d0; opacity: .45; bottom: -160px; left: -120px; animation: float2 19s ease-in-out infinite; }
 .hero__deco i:nth-child(3) { --d: -84; width: 320px; height: 320px; background: #ffc4a8; opacity: .45; top: 30%; left: 45%; animation: float1 22s ease-in-out infinite reverse; }
-/* ガラスの泡（default.js が足す）。ポインタを近づけると逃げ、クリックすると弾かれる */
-@keyframes dp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
-@keyframes dp-pop { from { opacity: 0; scale: .3; } to { opacity: 1; scale: 1; } }
-@keyframes dp-hit { 0% { scale: 1; } 25% { scale: 1.12 .9; } 50% { scale: .93 1.07; } 75% { scale: 1.03 .98; } 100% { scale: 1; } }
-.hero__deco .dp-bubble {
-  filter: none; opacity: 1;
-  background:
-    radial-gradient(circle at 31% 25%, rgba(255, 255, 255, .95) 0, rgba(255, 255, 255, .4) 8%, rgba(255, 255, 255, 0) 28%),
-    radial-gradient(circle at 72% 80%, rgba(45, 212, 191, .34), rgba(45, 212, 191, 0) 52%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .06) 42%, rgba(59, 91, 255, .15) 76%, rgba(59, 91, 255, .36) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .75), inset 0 -24px 50px -14px rgba(59, 91, 255, .28), 0 44px 70px -34px rgba(59, 91, 255, .5);
-  -webkit-backdrop-filter: blur(5px) saturate(1.7); backdrop-filter: blur(5px) saturate(1.7);
-  translate: calc(var(--tx, 0px) + var(--px, 0) * var(--d, 0) * 1px) calc(var(--ty, 0px) + var(--py, 0) * var(--d, 0) * 1px);
-  animation: dp-bob 7s ease-in-out infinite, dp-pop 1.1s cubic-bezier(.3, 1.5, .5, 1) both;
-}
-.hero__deco .dp-bubble.is-hit { animation: dp-bob 7s ease-in-out infinite, dp-hit .7s ease-out; }
-.hero__deco .dp-bubble--a { --d: 26; width: clamp(220px, 27vw, 360px); aspect-ratio: 1; right: 7%; top: 25%; animation-delay: 0s, .5s; }
-.hero__deco .dp-bubble--b { --d: 54; width: clamp(84px, 9vw, 124px); aspect-ratio: 1; left: 59%; top: 71%; animation-duration: 5.6s, 1.1s; animation-delay: -2s, .75s; }
-.hero__deco .dp-bubble--c { --d: 80; width: clamp(44px, 4.6vw, 64px); aspect-ratio: 1; right: 21%; top: 12%; animation-duration: 4.4s, 1.1s; animation-delay: -1s, .95s; }
 @media (max-width: 639px) {
   .hero__deco::before { width: 460px; height: 460px; top: -200px; right: -180px; opacity: .26; }
-  .hero__deco .dp-bubble--a { width: 230px; right: -74px; top: 9%; }
-  .hero__deco .dp-bubble--b { left: 66%; top: 76%; }
-  .hero__deco .dp-bubble--c { right: auto; left: 10%; top: 15%; }
 }
 /* ポインタについてくる光の玉（default.js が足す） */
 .hero__deco .dp-orb {

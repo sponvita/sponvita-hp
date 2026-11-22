@@ -103,18 +103,7 @@
     return { el: el, cx: 0, y: 0, vy: 0, r: 0, vr: 0 };
   });
   var fontSize = 100;
-  // ガラスの泡
-  var bubbles = ['a', 'b', 'c'].map(function (k) {
-    var el = document.createElement('i');
-    el.className = 'dp-bubble dp-bubble--' + k;
-    deco.appendChild(el);
-    return { el: el, cx: 0, cy: 0, rad: 0, x: 0, y: 0, vx: 0, vy: 0 };
-  });
   function measure() {
-    bubbles.forEach(function (B) {
-      B.rad = B.el.offsetWidth / 2;
-      B.cx = B.el.offsetLeft + B.rad; B.cy = B.el.offsetTop + B.rad;
-    });
     fontSize = parseFloat(getComputedStyle(title).fontSize) || 100;
     title.style.setProperty('--tw', title.clientWidth + 'px');
     letters.forEach(function (L) {
@@ -182,20 +171,6 @@
       ring.addEventListener('animationend', function () { this.remove(); });
       deco.appendChild(ring);
     }
-    // 泡は、クリックした場所から外へ弾かれる。泡そのものを押したら、ぷるんと揺れる
-    var hx = e.clientX - dr.left, hy = e.clientY - dr.top;
-    bubbles.forEach(function (B) {
-      var dx = B.cx + B.x - hx, dy = B.cy + B.y - hy;
-      var d = Math.sqrt(dx * dx + dy * dy) || 1;
-      var imp = 2600 / (d + 120);
-      B.vx += dx / d * imp; B.vy += dy / d * imp;
-      if (d < B.rad) {
-        B.el.classList.remove('is-hit');
-        void B.el.offsetWidth;
-        B.el.classList.add('is-hit');
-      }
-    });
-    kick();
     var tr = title.getBoundingClientRect();
     var pad = fontSize * 0.5;
     if (e.clientX > tr.left - pad && e.clientX < tr.right + pad && e.clientY > tr.top - pad && e.clientY < tr.bottom + pad) {
@@ -233,25 +208,6 @@
       orb.style.setProperty('--ox', ox.toFixed(1) + 'px');
       orb.style.setProperty('--oy', oy.toFixed(1) + 'px');
       if (Math.abs(P.x - ox) > 0.5 || Math.abs(P.y - oy) > 0.5) busy = true;
-    }
-
-    // 泡：ポインタが近づくと、反対へ逃げる（ばね）
-    for (var k = 0; k < bubbles.length; k++) {
-      var B = bubbles[k], gx = 0, gy = 0;
-      if (P.inside) {
-        var bx = B.cx + B.x - P.x, by = B.cy + B.y - P.y;
-        var bd = Math.sqrt(bx * bx + by * by), reach = B.rad + 120;
-        if (bd < reach && bd > 1) {
-          var push = (1 - bd / reach) * 80;
-          gx = B.x * 0.55 + bx / bd * push; gy = B.y * 0.55 + by / bd * push;
-        }
-      }
-      B.vx = (B.vx + (gx - B.x) * 0.045) * 0.9;
-      B.vy = (B.vy + (gy - B.y) * 0.045) * 0.9;
-      B.x += B.vx; B.y += B.vy;
-      if (Math.abs(B.vx) > 0.03 || Math.abs(B.vy) > 0.03 || Math.abs(gx - B.x) > 0.3 || Math.abs(gy - B.y) > 0.3) busy = true;
-      B.el.style.setProperty('--tx', B.x.toFixed(1) + 'px');
-      B.el.style.setProperty('--ty', B.y.toFixed(1) + 'px');
     }
 
     // タイトルの色：ポインタが左へ行くほど青が左へ寄る

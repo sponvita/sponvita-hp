@@ -122,6 +122,7 @@
       <dt>深さ</dt><dd id="g-depth">3.2 m</dd>
       <dt>気温</dt><dd id="g-temp">15.1 ℃</dd>
       <dt>最深記録</dt><dd id="g-best">B1F</dd>
+      <dt>走行距離</dt><dd id="g-odo">—</dd>
     </dl>
 
     <div class="floor">
@@ -141,6 +142,8 @@
     /*
      * 地下。100 階まであるが、どの階にもほとんど何もない。
      * 階は ?f=12 のように URL に入る。4 階は欠番（3 階の下は 5 階）。
+     * 階段を昇り降りした分は、トップページの走行距離計（/muda/muda.js）に足される。
+     * 足すのは階段を使ったときだけ。URL で階を指定して来たときと、ブラウザの「戻る」は数えない。
      */
     (function () {
       var BOTTOM = 100, SKIP = 4;
@@ -196,6 +199,34 @@
         return b;
       }
 
+      // ── 走行距離計に足す ──
+      // 書くのは sponvita.muda.dig だけ。スクロールの分（sponvita.muda.odo）は読むだけにして、
+      // トップページ側の記録とぶつからないようにしている
+      var PX_TO_M = 0.0254 / 96;        // /muda/muda.js と同じ換算
+      var digMem = null;
+      function dig() {
+        var d;
+        try { d = JSON.parse(localStorage.getItem('sponvita.muda.dig')); } catch (e) { d = digMem; }
+        return d && typeof d.m === 'number' && d.m > 0 ? d : { m: 0, t0: 0, t100: 0 };
+      }
+      function total(d) {
+        var px = 0;
+        try { px = (JSON.parse(localStorage.getItem('sponvita.muda.odo')) || {}).px || 0; } catch (e) {}
+        return (px > 0 ? px * PX_TO_M : 0) + d.m;
+      }
+      function walk(floors) {
+        var d = dig(), before = total(d);
+        if (!d.t0) d.t0 = Date.now();
+        d.m = Math.round((d.m + floors * FLOOR_M) * 10) / 10;
+        if (!d.t100 && before < 100 && total(d) >= 100) d.t100 = Date.now();
+        digMem = d;
+        try { localStorage.setItem('sponvita.muda.dig', JSON.stringify(d)); } catch (e) {}
+      }
+      function dist(m) {
+        if (m >= 1000) return (m / 1000).toFixed(2) + ' km';
+        return m.toFixed(m < 10 ? 2 : 1) + ' m';
+      }
+
       function render(n) {
         var text = SPECIAL[n] || POOL[(n * 7 + 3) % POOL.length].replace('{n}', n);
         document.title = 'B' + n + 'F | 株式会社SPONVITA';
@@ -207,6 +238,7 @@
         $('g-depth').textContent = depth.toFixed(1) + ' m';
         $('g-temp').textContent = (15 + depth * 0.03).toFixed(1) + ' ℃';
         $('g-best').textContent = 'B' + best(n) + 'F';
+        $('g-odo').textContent = dist(total(dig()));
         document.body.style.setProperty('--dark', n === 13 ? 0.86 : Math.min(0.72, (n - 1) / 99 * 0.72).toFixed(3));
         document.body.classList.toggle('is-dark', n === 13);
 
@@ -225,6 +257,7 @@
       var busy = false;
       function go(n, dir) {
         if (busy || n < 1 || n > BOTTOM) return;
+        walk(Math.abs(n - current()));    // 3 階から 5 階へは 2 階ぶん（深さの計器と同じ数え方）
         history.pushState(null, '', url(n));
         if (reduce) return render(n);
         busy = true;
@@ -238,18 +271,29 @@
       function step(dir) {
         var n = current();
         if (dir === 'down') { if (n < BOTTOM) go(below(n), 'down'); }
-        else if (n === 1) location.href = '/';
+        else if (n === 1) { walk(1); location.href = '/'; }
         else go(above(n), 'up');
       }
 
       $('down').addEventListener('click', function (e) { e.preventDefault(); step('down'); });
-      $('up').addEventListener('click', function (e) { if (current() !== 1) { e.preventDefault(); step('up'); } });
+      $('up').addEventListener('click', function (e) {
+        if (current() === 1) walk(1);     // 地上へ昇る 1 階ぶん。あとはリンクのまま進む
+        else { e.preventDefault(); step('up'); }
+      });
       window.addEventListener('keydown', function (e) {
         if (e.metaKey || e.ctrlKey || e.altKey) return;
         if (e.key === 'ArrowDown') { e.preventDefault(); step('down'); }
         if (e.key === 'ArrowUp') { e.preventDefault(); step('up'); }
       });
       window.addEventListener('popstate', function () { render(current()); });
+
+      // トップページの床から降りてきたときは、地上から地下 1 階までの 1 階ぶんを足す
+      try {
+        if (sessionStorage.getItem('sponvita.muda.descend')) {
+          sessionStorage.removeItem('sponvita.muda.descend');
+          if (current() === 1) walk(1);
+        }
+      } catch (e) {}
 
       render(current());
     })();

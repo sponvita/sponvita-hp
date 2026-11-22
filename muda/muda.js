@@ -2,6 +2,7 @@
  * muda — なくても誰も困らない機能を 3 つ。どのデザインを引いても動く。
  *
  *   1. 走行距離計 … このサイトを何メートル スクロールしたかを測り続ける（フッターの「↕ 0.00 m」）
+ *                   地下の階段を昇り降りした分も足す（1 階ぶん 3.2 m。数えるのは /b1/ の側）
  *   2. 居眠り     … 45 秒さわらないと、サイトが寝る。さわると「寝てません」と言う
  *   3. 地下への入口 … いちばん下で、さらに下へ行こうとし続けると、床が開く（/b1/ へ）
  *
@@ -69,7 +70,15 @@
   var odo = load('odo', { px: 0, t0: 0, hit: 0, t100: 0 });
   var odoBtn = null, odoDirty = false;
 
-  function meters() { return odo.px * PX_TO_M; }
+  // 地下の階段を昇り降りした分。書くのは /b1/ の側だけで、ここでは読むだけ（0 に戻すときを除く）
+  //   m: メートル / t0: 最初に階段を使った時刻 / t100: 地下にいるあいだに合計が 100 m を超えた時刻
+  var dig = loadDig();
+  function loadDig() {
+    var d = load('dig', null);
+    return d && typeof d.m === 'number' && d.m > 0 ? d : { m: 0, t0: 0, t100: 0 };
+  }
+
+  function meters() { return odo.px * PX_TO_M + dig.m; }
   function distance(m) {
     if (m >= 1000) return fixed(m / 1000, 2) + ' km';
     return fixed(m, m < 10 ? 2 : 1) + ' m';
@@ -113,23 +122,46 @@
       odo.px += d;
       odoDirty = true;
       paintOdo();
-      var m = meters();
-      while (odo.hit < GOALS.length && m >= GOALS[odo.hit].m) {
-        var g = GOALS[odo.hit++];
-        if (g.m === 100) {
-          odo.t100 = Date.now() - odo.t0;
-          say('走行距離 100 m。タイムは ' + span(odo.t100) + ' でした（世界記録は 9.58 秒）。', 7000);
-        } else {
-          say(g.hit || '走行距離 ' + goalLabel(g) + '。' + g.name + 'を超えました。', 5200);
-        }
-      }
+      checkGoals(false);
     }, { passive: true });
 
     setInterval(flushOdo, 1500);
     window.addEventListener('pagehide', flushOdo);
-    doc.addEventListener('visibilitychange', flushOdo);
+    doc.addEventListener('visibilitychange', function () {
+      flushOdo();
+      if (!doc.hidden) syncDig();
+    });
+    // 地下から「戻る」で帰ってきたとき（ページが読み込み直されない）
+    window.addEventListener('pageshow', function (e) { if (e.persisted) syncDig(); });
+    setTimeout(syncDig, 1200);
   }
   function flushOdo() { if (odoDirty) { odoDirty = false; save('odo', odo); } }
+
+  // 目標を超えていたら知らせる。away は「地下にいるあいだに超えた」とき（まとめて 1 回だけ言う）
+  function checkGoals(away) {
+    var m = meters(), last = null;
+    while (odo.hit < GOALS.length && m >= GOALS[odo.hit].m) {
+      var g = GOALS[odo.hit++];
+      odoDirty = true;
+      last = g;
+      if (g.m === 100) odo.t100 = Math.max(0, (away && dig.t100 ? dig.t100 : Date.now()) - odo.t0);
+      if (away) continue;
+      if (g.m === 100) say('走行距離 100 m。タイムは ' + span(odo.t100) + ' でした（世界記録は 9.58 秒）。', 7000);
+      else say(g.hit || '走行距離 ' + goalLabel(g) + '。' + g.name + 'を超えました。', 5200);
+    }
+    if (!away || !last) return;
+    if (last.m === 100) say('地下にいるあいだに、走行距離が 100 m を超えていました。タイムは ' + span(odo.t100) + ' でした（世界記録は 9.58 秒）。', 7000);
+    else if (last.m === 1) say('地下にいるあいだに、走行距離が 1 m を超えていました。フッターで測っています。', 6000);
+    else say('地下にいるあいだに、走行距離が ' + goalLabel(last) + '（' + last.name + '）を超えていました。', 6000);
+  }
+
+  // 地下で増えた分を読み直す
+  function syncDig() {
+    dig = loadDig();
+    if (dig.t0 && (!odo.t0 || dig.t0 < odo.t0)) { odo.t0 = dig.t0; odoDirty = true; }
+    paintOdo();
+    checkGoals(true);
+  }
 
   var dialog = null;
   function openOdo() {
@@ -143,6 +175,8 @@
         if (t.closest && t.closest('.muda-reset')) {
           odo = { px: 0, t0: 0, hit: 0, t100: 0 };
           save('odo', odo);
+          save('dig', null);
+          dig = loadDig();
           paintOdo();
           renderOdo();
           say('メーターを 0 に戻しました。');
@@ -173,6 +207,7 @@
       var elapsed = now - odo.t0;
       facts.push('測りはじめてから ' + span(elapsed) + '。');
       if (odo.t100) facts.push('100 m のタイムは ' + span(odo.t100) + '（世界記録は 9.58 秒）。');
+      if (dig.m > 0) facts.push('うち ' + distance(dig.m) + ' は、地下の階段を昇り降りした分です。');
       var speed = m / (elapsed / 1000);   // m/秒
       if (m > 0 && elapsed > 3000) {
         var y = (384400000 - m) / speed / 31557600;
@@ -193,7 +228,7 @@
         : '<p class="muda-next">月に着きました。おつかれさまでした。</p>') +
       '<ul class="muda-list">' + list + '</ul>' +
       '<div class="muda-facts">' + facts.map(function (f) { return '<p>' + f + '</p>'; }).join('') + '</div>' +
-      '<p class="muda-note">このサイトを上下にスクロールした量を、CSS の 1px ＝ 1/96 インチ（約 0.26 mm）として足しています。画面の大きさによって、指やホイールが実際に動いた距離とは違います。記録はこのブラウザの中だけにあります。</p>' +
+      '<p class="muda-note">このサイトを上下にスクロールした量を、CSS の 1px ＝ 1/96 インチ（約 0.26 mm）として足しています。画面の大きさによって、指やホイールが実際に動いた距離とは違います。地下の階段は、1 階ぶんを 3.2 m として足しています。記録はこのブラウザの中だけにあります。</p>' +
       '<div class="muda-dialog__foot"><button type="button" class="muda-reset">メーターを 0 に戻す</button>' +
       '<button type="button" class="muda-ok" data-close>閉じる</button></div></div>';
   }
@@ -299,6 +334,11 @@
       hatch = el('a', 'muda-hatch');
       hatch.href = '/b1/';
       hatch.appendChild(el('span', '', '▼ 地下 1 階へ降りる'));
+      // 地上から地下 1 階へ降りる 1 階ぶんは、着いた先（/b1/）で距離に足す
+      hatch.addEventListener('click', function () {
+        flushOdo();
+        try { sessionStorage.setItem('sponvita.muda.descend', '1'); } catch (e) {}
+      });
       doc.body.appendChild(hatch);
       save('basement', true);
     }
